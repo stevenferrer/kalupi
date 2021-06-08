@@ -65,7 +65,7 @@ func TestHTTPHandler(t *testing.T) {
 
 			rr = httptest.NewRecorder()
 			accountHandler.ServeHTTP(rr, httpReq)
-			require.Equal(t, http.StatusBadRequest, rr.Code)
+			require.Equal(t, http.StatusUnprocessableEntity, rr.Code)
 
 			var resp = map[string]interface{}{}
 			err = json.NewDecoder(rr.Body).Decode(&resp)
@@ -97,6 +97,15 @@ func TestHTTPHandler(t *testing.T) {
 		assert.Equal(t, accountID, resp.Account.AccountID)
 		assert.Equal(t, "USD", resp.Account.Currency)
 		assert.Equal(t, "0", resp.Account.Balance)
+
+		t.Run("not found", func(t *testing.T) {
+			httpReq, err = http.NewRequestWithContext(ctx, http.MethodGet, "/johntravolta", nil)
+			require.NoError(t, err)
+
+			rr := httptest.NewRecorder()
+			accountHandler.ServeHTTP(rr, httpReq)
+			require.Equal(t, http.StatusNotFound, rr.Code)
+		})
 	})
 
 	t.Run("list accounts", func(t *testing.T) {

@@ -91,9 +91,8 @@ type errorer interface {
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	// TODO: use 422 for validation errors
 	if errors.Is(err, ErrValidation) {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 	} else if errors.Is(err, ErrAccountNotFound) {
 		w.WriteHeader(http.StatusNotFound)
 	} else {

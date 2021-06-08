@@ -96,7 +96,7 @@ func TestHTTPHandler(t *testing.T) {
 
 			rr = httptest.NewRecorder()
 			xactHandler.ServeHTTP(rr, httpReq)
-			require.Equal(t, http.StatusBadRequest, rr.Code)
+			require.Equal(t, http.StatusUnprocessableEntity, rr.Code)
 		})
 	})
 
@@ -134,7 +134,7 @@ func TestHTTPHandler(t *testing.T) {
 
 			rr = httptest.NewRecorder()
 			xactHandler.ServeHTTP(rr, httpReq)
-			require.Equal(t, http.StatusBadRequest, rr.Code)
+			require.Equal(t, http.StatusUnprocessableEntity, rr.Code)
 		})
 	})
 
@@ -163,6 +163,24 @@ func TestHTTPHandler(t *testing.T) {
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(30).Equal(maryBal.CurrentBal), "mary should now have a balance of 30")
 
+		t.Run("insufficient balance", func(t *testing.T) {
+			req = map[string]interface{}{
+				"from_account": john.AccountID,
+				"to_account":   mary.AccountID,
+				"amount":       300,
+			}
+
+			b, err = json.Marshal(req)
+			require.NoError(t, err)
+
+			httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, "/payments", bytes.NewBuffer(b))
+			require.NoError(t, err)
+
+			rr = httptest.NewRecorder()
+			xactHandler.ServeHTTP(rr, httpReq)
+			require.Equal(t, http.StatusUnprocessableEntity, rr.Code)
+		})
+
 		t.Run("validation error", func(t *testing.T) {
 			req = map[string]interface{}{
 				"from_account": john.AccountID,
@@ -178,7 +196,7 @@ func TestHTTPHandler(t *testing.T) {
 
 			rr = httptest.NewRecorder()
 			xactHandler.ServeHTTP(rr, httpReq)
-			require.Equal(t, http.StatusBadRequest, rr.Code)
+			require.Equal(t, http.StatusUnprocessableEntity, rr.Code)
 		})
 	})
 

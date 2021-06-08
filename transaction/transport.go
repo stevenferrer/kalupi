@@ -107,9 +107,9 @@ type errorer interface {
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	// TODO: use status 422 for insufficient balance etc.
-	if errors.Is(err, ErrValidation) {
-		w.WriteHeader(http.StatusBadRequest)
+	if errors.Is(err, ErrValidation) ||
+		errors.Is(err, ErrInsufficientBalance) {
+		w.WriteHeader(http.StatusUnprocessableEntity)
 	} else if errors.Is(err, ErrSendingAccountNotFound) ||
 		errors.Is(err, ErrReceivingAccountNotFound) {
 		w.WriteHeader(http.StatusNotFound)

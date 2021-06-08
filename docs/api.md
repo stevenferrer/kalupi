@@ -1,6 +1,7 @@
 # Kalupi REST API
 
-- [Kalupi REST API](#kalupi-rest-api)
+**Table of Contents**
+----
   - [**Create wallet account**](#create-wallet-account)
   - [**Get wallet account**](#get-wallet-account)
   - [**List wallet accounts**](#list-wallet-accounts)
@@ -30,7 +31,7 @@
     ```json
     {
         "account_id": [alphanumeric],
-        "currency": [ISO 4217 Currency codes. e.g. USD]
+        "currency": [ISO 4217 e.g. USD]
     }
     ```
 
@@ -41,7 +42,7 @@
  
 * **Error Response:**
 
-  * **Code:** 422 UNPROCESSABLE ENTRY<br />
+  * **Code:** 422 UNPROCESSABLE ENTITY <br />
     **Content:**
     ```json
     {
@@ -136,7 +137,7 @@
           "id": "maryjane",
           "currency": "USD",
           "balance": "10.398"
-          }
+        }
       ]
     }
     ```
@@ -172,7 +173,7 @@
     ```json
     {
         "account_id": [alphanumeric],
-        "amount": [Non-zero, non-negative decimal]
+        "amount": [Non-zero and non-negative decimal]
     }
     ```
 
@@ -212,7 +213,7 @@
     ```json
     {
         "account_id": [alphanumeric],
-        "amount": [Non-zero, non-negative decimal]
+        "amount": [Non-zero and non-negative decimal]
     }
     ```
 
@@ -222,6 +223,14 @@
     **Content:** None
  
 * **Error Response:**
+
+  * **Code** 422 UNPROCESSABLE ENTITY <br />
+    **Content:**
+    ```json
+    {
+      "error": "insufficient balance"
+    }
+    ```
 
   * **Code** 500 INTERNAL SERVER ERROR <br />
     **Content:**
@@ -264,7 +273,7 @@
  
 * **Error Response:**
 
-  * **Code** 422 UNPROCESSABLE ENTRY<br />
+  * **Code** 422 UNPROCESSABLE ENTITY<br />
     **Content:**
     ```json
     {
@@ -275,6 +284,12 @@
     ```json
     {
       "error": "receiving account not found"
+    }
+    ```
+    or
+    ```json
+    {
+      "error": "insufficient balance"
     }
     ```
 
@@ -306,7 +321,8 @@
     {
       "payments": [
         {
-          "xact_no": "LM4I8FHC05X0","account": "johndoe",
+          "xact_no": "LM4I8FHC05X0",
+          "account": "johndoe",
           "amount": "23.938",
           "direction": "outgoing",
           "to_account": "maryjane"
@@ -318,19 +334,7 @@
           "direction": "incoming",
           "from_account": "johndoe"
         },
-        {
-          "xact_no": "8DHT4VU95ELA",
-          "account": "maryjane",
-          "amount": "13.54",
-          "direction": "outgoing",
-          "to_account": "johndoe"
-        },
-        {
-          "xact_no": "8DHT4VU95ELA",
-          "account": "johndoe",
-          "amount": "13.54",
-          "direction": "incoming","from_account": "maryjane"
-        }
+        ...
       ]
     }
     ```
