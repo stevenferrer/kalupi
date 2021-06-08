@@ -70,7 +70,7 @@ func TestHTTPHandler(t *testing.T) {
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
 
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/xact/deposit", bytes.NewBuffer(b))
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/deposit", bytes.NewBuffer(b))
 		require.NoError(t, err)
 
 		rr := httptest.NewRecorder()
@@ -91,7 +91,7 @@ func TestHTTPHandler(t *testing.T) {
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
 
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/xact/withdraw", bytes.NewBuffer(b))
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/withdraw", bytes.NewBuffer(b))
 		require.NoError(t, err)
 
 		rr := httptest.NewRecorder()
@@ -113,7 +113,7 @@ func TestHTTPHandler(t *testing.T) {
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
 
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/xact/payment", bytes.NewBuffer(b))
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/payment", bytes.NewBuffer(b))
 		require.NoError(t, err)
 
 		rr := httptest.NewRecorder()

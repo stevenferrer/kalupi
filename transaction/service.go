@@ -16,6 +16,7 @@ import (
 )
 
 // TODO: return the XactNo??
+// TODO: validate transactions (e.g. non-negative deposit, withdrawal and transfer)
 
 // Service is the transaction service
 type Service interface {

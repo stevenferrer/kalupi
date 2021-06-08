@@ -13,6 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/sf9v/kalupi/account"
+	accountsvc "github.com/sf9v/kalupi/account/service"
+	"github.com/sf9v/kalupi/balance"
 	"github.com/sf9v/kalupi/etc/txdb"
 	"github.com/sf9v/kalupi/postgres"
 )
@@ -24,8 +26,11 @@ func TestHTTPHandler(t *testing.T) {
 	err := postgres.Migrate(db)
 	require.NoError(t, err)
 
+	balRepo := postgres.NewBalanceRepository(db)
+	balService := balance.NewService(balRepo)
+
 	accountRepo := postgres.NewAccountRepository(db)
-	accountService := account.NewService(accountRepo)
+	accountService := accountsvc.New(accountRepo, balService)
 
 	logger := log.NewNopLogger()
 	accountService = account.NewLoggingService(logger, accountService)
@@ -43,7 +48,7 @@ func TestHTTPHandler(t *testing.T) {
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
 
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/accounts", bytes.NewBuffer(b))
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/", bytes.NewBuffer(b))
 		require.NoError(t, err)
 
 		rr := httptest.NewRecorder()
@@ -52,7 +57,7 @@ func TestHTTPHandler(t *testing.T) {
 	})
 
 	t.Run("get account", func(t *testing.T) {
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, "/accounts/"+accountID, nil)
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, "/"+accountID, nil)
 		require.NoError(t, err)
 
 		rr := httptest.NewRecorder()
@@ -61,8 +66,9 @@ func TestHTTPHandler(t *testing.T) {
 
 		var resp = struct {
 			Account struct {
-				AccountID string `json:"accountId"`
+				AccountID string `json:"id"`
 				Currency  string `json:"currency"`
+				Balance   string `json:"balance"`
 			} `json:"account"`
 			Err string `json:"error"`
 		}{}
@@ -73,10 +79,11 @@ func TestHTTPHandler(t *testing.T) {
 		require.NotNil(t, resp.Account)
 		assert.Equal(t, accountID, resp.Account.AccountID)
 		assert.Equal(t, "USD", resp.Account.Currency)
+		assert.Equal(t, "0", resp.Account.Balance)
 	})
 
 	t.Run("list accounts", func(t *testing.T) {
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, "/accounts", nil)
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, "/", nil)
 		require.NoError(t, err)
 
 		rr := httptest.NewRecorder()
@@ -85,8 +92,9 @@ func TestHTTPHandler(t *testing.T) {
 
 		var resp = struct {
 			Accounts []struct {
-				AccountID string `json:"accountId"`
+				AccountID string `json:"id"`
 				Currency  string `json:"currency"`
+				Balance   string `json:"balance"`
 			} `json:"accounts"`
 			Err string `json:"error"`
 		}{}
@@ -98,6 +106,7 @@ func TestHTTPHandler(t *testing.T) {
 		for _, accnt := range resp.Accounts {
 			assert.NotEmpty(t, accnt.AccountID)
 			assert.NotEmpty(t, accnt.Currency)
+			assert.Equal(t, "0", accnt.Balance)
 		}
 	})
 }

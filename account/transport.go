@@ -6,10 +6,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
 	kithttp "github.com/go-kit/kit/transport/http"
-	"github.com/gorilla/mux"
 )
 
 func NewHandler(s Service, logger kitlog.Logger) http.Handler {
@@ -39,13 +39,13 @@ func NewHandler(s Service, logger kitlog.Logger) http.Handler {
 		opts...,
 	)
 
-	r := mux.NewRouter()
+	mux := chi.NewMux()
 
-	r.Handle("/accounts", createAccountHandler).Methods(http.MethodPost)
-	r.Handle("/accounts/{accountId}", getAccountHandler).Methods(http.MethodGet)
-	r.Handle("/accounts", listAccountsHandler).Methods(http.MethodGet)
+	mux.Method(http.MethodPost, "/", createAccountHandler)
+	mux.Method(http.MethodGet, "/", listAccountsHandler)
+	mux.Method(http.MethodGet, "/{accountId}", getAccountHandler)
 
-	return r
+	return mux
 }
 
 func decodeCreateAccountRequest(_ context.Context, r *http.Request) (interface{}, error) {
@@ -58,10 +58,8 @@ func decodeCreateAccountRequest(_ context.Context, r *http.Request) (interface{}
 }
 
 func decodeGetAccountRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	vars := mux.Vars(r)
-
-	accountID, ok := vars["accountId"]
-	if !ok {
+	accountID := chi.URLParam(r, "accountId")
+	if accountID == "" {
 		return nil, errors.New("bad route")
 	}
 

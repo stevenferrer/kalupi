@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
 	kithttp "github.com/go-kit/kit/transport/http"
-	"github.com/gorilla/mux"
 )
 
 func NewHandler(s Service, logger kitlog.Logger) http.Handler {
@@ -38,13 +38,13 @@ func NewHandler(s Service, logger kitlog.Logger) http.Handler {
 		opts...,
 	)
 
-	r := mux.NewRouter()
+	mux := chi.NewMux()
 
-	r.Handle("/xact/deposit", depositHandler).Methods(http.MethodPost)
-	r.Handle("/xact/withdraw", withdrawHandler).Methods(http.MethodPost)
-	r.Handle("/xact/payment", paymentHandler).Methods(http.MethodPost)
+	mux.Method(http.MethodPost, "/deposit", depositHandler)
+	mux.Method(http.MethodPost, "/withdraw", withdrawHandler)
+	mux.Method(http.MethodPost, "/payment", paymentHandler)
 
-	return r
+	return mux
 }
 
 func decodeDepositRequest(_ context.Context, r *http.Request) (interface{}, error) {

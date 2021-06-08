@@ -22,7 +22,10 @@ func (r createAccountResponse) error() error { return r.Err }
 func newCreateAccountEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(createAccountRequest)
-		err := s.CreateAccount(ctx, Account(req))
+		err := s.CreateAccount(ctx, Account{
+			AccountID: req.AccountID,
+			Currency:  currency.USD,
+		})
 		return createAccountResponse{Err: err}, nil
 	}
 }

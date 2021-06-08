@@ -41,7 +41,7 @@ func (br *BalanceRepository) GetAccntBal(ctx context.Context, tx tx.Tx, accntID 
 
 	var accntBal account.Balance
 	err = txx.QueryRowContext(ctx, stmnt, accntID).Scan(
-		&accntBal.AccntID,
+		&accntBal.AccountID,
 		&accntBal.TotalDebit,
 		&accntBal.TotalCredit,
 		&accntBal.CurrentBal,
@@ -50,7 +50,7 @@ func (br *BalanceRepository) GetAccntBal(ctx context.Context, tx tx.Tx, accntID 
 	if err != nil {
 		// no transaction record yet
 		if err == sql.ErrNoRows {
-			return &account.Balance{AccntID: accntID}, nil
+			return &account.Balance{AccountID: accntID}, nil
 		}
 		return nil, errors.Wrap(err, "query row context")
 	}

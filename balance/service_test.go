@@ -42,13 +42,8 @@ func TestBalanceService(t *testing.T) {
 	require.NoError(t, err)
 
 	ledgerRepo := postgres.NewLedgerRepository(db)
-	cashUSD := ledger.Ledger{
-		LedgerNo:    ledger.CashUSDLedgerNo,
-		AccountType: ledger.AccountTypeLiability,
-		Currency:    currency.USD,
-		Name:        "Cash USD",
-	}
-	err = ledgerRepo.CreateLedgersIfNotExist(ctx, cashUSD)
+	ledgerService := ledger.NewService(ledgerRepo)
+	err = ledgerService.CreateCashLedgers(ctx)
 	require.NoError(t, err)
 
 	balRepo := postgres.NewBalanceRepository(db)

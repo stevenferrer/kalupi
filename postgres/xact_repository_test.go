@@ -40,14 +40,11 @@ func TestXactRepository(t *testing.T) {
 	require.NoError(t, err)
 
 	ledgerRepo := postgres.NewLedgerRepository(db)
-	cashUSD := ledger.Ledger{
-		LedgerNo:    ledger.CashUSDLedgerNo,
-		AccountType: ledger.AccountTypeLiability,
-		Currency:    currency.USD,
-		Name:        "Cash USD",
-	}
-	err = ledgerRepo.CreateLedgersIfNotExist(ctx, cashUSD)
+	ledgerService := ledger.NewService(ledgerRepo)
+	err = ledgerService.CreateCashLedgers(ctx)
 	require.NoError(t, err)
+
+	cashUSDLedger := ledger.CashUSDLedgerNo
 
 	balRepo := postgres.NewBalanceRepository(db)
 	xactRepo := postgres.NewXactRepository(db)
@@ -61,7 +58,7 @@ func TestXactRepository(t *testing.T) {
 			dpXactNo := transaction.XactNo("dp900")
 			err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 				XactNo:      dpXactNo,
-				LedgerNo:    cashUSD.LedgerNo,
+				LedgerNo:    cashUSDLedger,
 				XactType:    transaction.XactTypeDebit,
 				AccountID:   johnDoe.AccountID,
 				XactTypeExt: transaction.XactTypeExtDeposit,
@@ -82,7 +79,7 @@ func TestXactRepository(t *testing.T) {
 			wdXactNo := transaction.XactNo("wd910")
 			err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 				XactNo:      wdXactNo,
-				LedgerNo:    cashUSD.LedgerNo,
+				LedgerNo:    cashUSDLedger,
 				XactType:    transaction.XactTypeCredit,
 				AccountID:   johnDoe.AccountID,
 				XactTypeExt: transaction.XactTypeExtWithdrawal,
@@ -103,7 +100,7 @@ func TestXactRepository(t *testing.T) {
 			transferAmount := decimal.NewFromInt(25)
 			err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 				XactNo:      trXactNo,
-				LedgerNo:    cashUSD.LedgerNo,
+				LedgerNo:    cashUSDLedger,
 				XactType:    transaction.XactTypeCredit,
 				AccountID:   johnDoe.AccountID,
 				XactTypeExt: transaction.XactTypeExtSndTransfer, // debit
@@ -114,7 +111,7 @@ func TestXactRepository(t *testing.T) {
 
 			err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 				XactNo:      trXactNo,
-				LedgerNo:    cashUSD.LedgerNo,
+				LedgerNo:    cashUSDLedger,
 				XactType:    transaction.XactTypeDebit,
 				AccountID:   maryJane.AccountID,
 				XactTypeExt: transaction.XactTypeExtRcvTransfer, // credit
