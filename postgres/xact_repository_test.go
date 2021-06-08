@@ -55,7 +55,8 @@ func TestXactRepository(t *testing.T) {
 			require.NoError(t, err)
 
 			// simulate deposit
-			dpXactNo := transaction.XactNo("dp900")
+			dpXactNo, err := transaction.NewXactNo()
+			require.NoError(t, err)
 			err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 				XactNo:      dpXactNo,
 				LedgerNo:    cashUSDLedger,
@@ -76,7 +77,8 @@ func TestXactRepository(t *testing.T) {
 			require.NoError(t, err)
 
 			// simulate withdrawal
-			wdXactNo := transaction.XactNo("wd910")
+			wdXactNo, err := transaction.NewXactNo()
+			require.NoError(t, err)
 			err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 				XactNo:      wdXactNo,
 				LedgerNo:    cashUSDLedger,
@@ -96,7 +98,8 @@ func TestXactRepository(t *testing.T) {
 			tx, err := xactRepo.BeginTx(ctx)
 			require.NoError(t, err)
 
-			trXactNo := transaction.XactNo("tr920")
+			trXactNo, err := transaction.NewXactNo()
+			require.NoError(t, err)
 			transferAmount := decimal.NewFromInt(25)
 			err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 				XactNo:      trXactNo,
@@ -149,5 +152,17 @@ func TestXactRepository(t *testing.T) {
 		xacts, err := xactRepo.ListXacts(ctx)
 		require.NoError(t, err)
 		assert.Len(t, xacts, 4)
+	})
+
+	t.Run("list transfers", func(t *testing.T) {
+		xacts, err := xactRepo.ListTransfers(ctx)
+		require.NoError(t, err)
+		assert.Len(t, xacts, 2)
+
+		for _, xact := range xacts {
+			sndXact := xact.XactTypeExt == transaction.XactTypeExtSndTransfer
+			rcvXact := xact.XactTypeExt == transaction.XactTypeExtRcvTransfer
+			assert.True(t, rcvXact || sndXact, "must be a sending or receiving transaction")
+		}
 	})
 }

@@ -23,6 +23,7 @@ type Service interface {
 	MakeDeposit(context.Context, DepositXact) error
 	MakeWithdrawal(context.Context, WithdrawalXact) error
 	MakeTransfer(context.Context, TransferXact) error
+	ListTransfers(context.Context) ([]*Transaction, error)
 }
 
 // DepositXact is a deposit transaction
@@ -127,7 +128,7 @@ func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) (err error) {
 	}
 
 	var xactNo XactNo
-	xactNo, err = newXactNo()
+	xactNo, err = NewXactNo()
 	if err != nil {
 		return errors.Wrap(err, "new xact number")
 	}
@@ -196,7 +197,7 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err er
 	}
 
 	var xactNo XactNo
-	xactNo, err = newXactNo()
+	xactNo, err = NewXactNo()
 	if err != nil {
 		return errors.Wrap(err, "new xact no")
 	}
@@ -297,7 +298,7 @@ func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error)
 	}
 
 	var xactNo XactNo
-	xactNo, err = newXactNo()
+	xactNo, err = NewXactNo()
 	if err != nil {
 		return errors.Wrap(err, "new xact no")
 	}
@@ -366,9 +367,13 @@ func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error)
 	return nil
 }
 
+func (s *service) ListTransfers(ctx context.Context) ([]*Transaction, error) {
+	return s.xactRepo.ListTransfers(ctx)
+}
+
 const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-func newXactNo() (XactNo, error) {
+func NewXactNo() (XactNo, error) {
 	xactNoStr, err := gonanoid.Generate(alphabet, 12)
 	if err != nil {
 		return "", errors.Wrap(err, "generate")

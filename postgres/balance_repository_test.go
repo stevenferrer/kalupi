@@ -66,7 +66,8 @@ func TestBalanceRepository(t *testing.T) {
 		assert.True(t, decimal.NewFromInt(0).Equal(johnBal.CurrentBal),
 			"john should have an initial balance of 0")
 
-		dpXactNo := transaction.XactNo("dp900")
+		dpXactNo, err := transaction.NewXactNo()
+		require.NoError(t, err)
 		err = xactRepo.CreateXact(ctx, tx1, transaction.Transaction{
 			XactNo:      dpXactNo,
 			LedgerNo:    cashUSD.LedgerNo,
@@ -95,7 +96,8 @@ func TestBalanceRepository(t *testing.T) {
 			}()
 
 			// simulate withdrawal
-			wdXactNo := transaction.XactNo("wd910")
+			wdXactNo, err := transaction.NewXactNo()
+			require.NoError(t, err)
 			err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 				XactNo:      wdXactNo,
 				LedgerNo:    cashUSD.LedgerNo,

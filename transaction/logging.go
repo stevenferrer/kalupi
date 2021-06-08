@@ -55,3 +55,16 @@ func (s *loggingService) MakeTransfer(ctx context.Context, tr TransferXact) (err
 
 	return s.s.MakeTransfer(ctx, tr)
 }
+
+func (s *loggingService) ListTransfers(ctx context.Context) (xacts []*Transaction, err error) {
+	defer func(begin time.Time) {
+		_ = s.logger.Log(
+			"method", "list_transfers",
+			"count", len(xacts),
+			"err", err,
+		)
+	}(time.Now())
+
+	return s.s.ListTransfers(ctx)
+
+}

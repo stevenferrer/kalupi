@@ -65,3 +65,21 @@ func newPaymentEndpoint(s Service) endpoint.Endpoint {
 		return paymentResponse{Err: err}, nil
 	}
 }
+
+type listPaymentsRequest struct{}
+
+type listPaymentsResponse struct {
+	Payments []*Payment `json:"payments"`
+	Err      error      `json:"error,omitempty"`
+}
+
+func newListPaymentsEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, _ interface{}) (interface{}, error) {
+		xacts, err := s.ListTransfers(ctx)
+		if err != nil {
+			return listPaymentsResponse{Err: err}, nil
+		}
+		payments := xactsToPayments(xacts)
+		return listPaymentsResponse{Payments: payments}, nil
+	}
+}

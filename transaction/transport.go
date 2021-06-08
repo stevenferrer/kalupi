@@ -39,11 +39,22 @@ func NewHandler(s Service, logger kitlog.Logger) http.Handler {
 		opts...,
 	)
 
+	listPaymentsHandler := kithttp.NewServer(
+		newListPaymentsEndpoint(s),
+		decodeListPaymentsRequest,
+		encodeResponse,
+		opts...,
+	)
+
 	mux := chi.NewMux()
 
 	mux.Method(http.MethodPost, "/deposit", depositHandler)
 	mux.Method(http.MethodPost, "/withdraw", withdrawHandler)
-	mux.Method(http.MethodPost, "/payment", paymentHandler)
+
+	mux.Route("/payments", func(r chi.Router) {
+		r.Method(http.MethodPost, "/", paymentHandler)
+		r.Method(http.MethodGet, "/", listPaymentsHandler)
+	})
 
 	return mux
 }
@@ -73,6 +84,10 @@ func decodePaymentRequest(_ context.Context, r *http.Request) (interface{}, erro
 	}
 
 	return request, nil
+}
+
+func decodeListPaymentsRequest(_ context.Context, _ *http.Request) (interface{}, error) {
+	return listPaymentsRequest{}, nil
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {

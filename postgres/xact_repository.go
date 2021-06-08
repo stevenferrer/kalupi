@@ -28,11 +28,6 @@ func (tr *XactRepository) CreateXact(ctx context.Context, tx tx.Tx, xact transac
 		return errors.New("expecting tx to be *sql.Tx")
 	}
 
-	// _, err := txx.ExecContext(ctx, "lock table account_transactions in exclusive mode")
-	// if err != nil {
-	// 	return errors.Wrap(err, "acquire exclusive lock")
-	// }
-
 	stmnt := `insert into account_transactions (
 			xact_no, ledger_no, xact_type,
 			account_id, xact_type_ext, amount, "desc"
@@ -50,8 +45,9 @@ func (tr *XactRepository) CreateXact(ctx context.Context, tx tx.Tx, xact transac
 }
 
 func (tr *XactRepository) ListXacts(ctx context.Context) ([]*transaction.Transaction, error) {
-	stmnt := `select xact_no, ledger_no, xact_type, account_id, 
-		xact_type_ext, amount, "desc", ts from account_transactions`
+	stmnt := `select xact_no, ledger_no, xact_type, 
+			account_id, xact_type_ext, amount, "desc", ts 
+		from account_transactions order by ts`
 
 	rows, err := tr.db.QueryContext(ctx, stmnt)
 	if err != nil {
@@ -63,14 +59,40 @@ func (tr *XactRepository) ListXacts(ctx context.Context) ([]*transaction.Transac
 	for rows.Next() {
 		var xact transaction.Transaction
 		err = rows.Scan(
-			&xact.XactNo,
-			&xact.LedgerNo,
-			&xact.XactType,
-			&xact.AccountID,
-			&xact.XactTypeExt,
-			&xact.Amount,
-			&xact.Desc,
-			&xact.Ts,
+			&xact.XactNo, &xact.LedgerNo,
+			&xact.XactType, &xact.AccountID,
+			&xact.XactTypeExt, &xact.Amount,
+			&xact.Desc, &xact.Ts,
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "row scan")
+		}
+
+		xacts = append(xacts, &xact)
+	}
+
+	return xacts, nil
+}
+
+func (tr *XactRepository) ListTransfers(ctx context.Context) ([]*transaction.Transaction, error) {
+	stmnt := `select xact_no, ledger_no, xact_type, account_id, 
+		xact_type_ext, amount, "desc", ts from account_transactions
+		where xact_type_ext in ('STr', 'RTr') order by ts`
+
+	rows, err := tr.db.QueryContext(ctx, stmnt)
+	if err != nil {
+		return nil, errors.Wrap(err, "query row context")
+	}
+	defer rows.Close()
+
+	xacts := []*transaction.Transaction{}
+	for rows.Next() {
+		var xact transaction.Transaction
+		err = rows.Scan(
+			&xact.XactNo, &xact.LedgerNo,
+			&xact.XactType, &xact.AccountID,
+			&xact.XactTypeExt, &xact.Amount,
+			&xact.Desc, &xact.Ts,
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "row scan")

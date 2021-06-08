@@ -147,7 +147,7 @@ func TestHTTPHandler(t *testing.T) {
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
 
-		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/payment", bytes.NewBuffer(b))
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "/payments", bytes.NewBuffer(b))
 		require.NoError(t, err)
 
 		rr := httptest.NewRecorder()
@@ -173,12 +173,31 @@ func TestHTTPHandler(t *testing.T) {
 			b, err = json.Marshal(req)
 			require.NoError(t, err)
 
-			httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, "/payment", bytes.NewBuffer(b))
+			httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, "/payments", bytes.NewBuffer(b))
 			require.NoError(t, err)
 
 			rr = httptest.NewRecorder()
 			xactHandler.ServeHTTP(rr, httpReq)
 			require.Equal(t, http.StatusBadRequest, rr.Code)
 		})
+	})
+
+	t.Run("list payments", func(t *testing.T) {
+		httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, "/payments", nil)
+		require.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+		xactHandler.ServeHTTP(rr, httpReq)
+		require.Equal(t, http.StatusOK, rr.Code)
+
+		var resp = struct {
+			Payments []*transaction.Payment `json:"payments"`
+			Err      string                 `json:"error"`
+		}{}
+		err = json.NewDecoder(rr.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Empty(t, resp.Err)
+
+		assert.Len(t, resp.Payments, 2)
 	})
 }

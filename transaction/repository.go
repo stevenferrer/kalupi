@@ -10,4 +10,5 @@ type Repository interface {
 	BeginTx(context.Context) (tx.Tx, error)
 	CreateXact(context.Context, tx.Tx, Transaction) error
 	ListXacts(context.Context) ([]*Transaction, error)
+	ListTransfers(context.Context) ([]*Transaction, error)
 }
