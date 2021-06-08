@@ -29,6 +29,15 @@ func (s *service) CreateAccount(ctx context.Context, accnt account.Account) erro
 		return multierr.Combine(account.ErrValidation, err)
 	}
 
+	exists, err := s.accountRepo.IsAccountExists(ctx, accnt.AccountID)
+	if err != nil {
+		return errors.Wrap(err, "is account exists")
+	}
+
+	if exists {
+		return account.ErrAccountAlreadyExist
+	}
+
 	_, err = s.accountRepo.CreateAccount(ctx, accnt)
 	if err != nil {
 		return errors.Wrap(err, "repo create account")
@@ -39,6 +48,20 @@ func (s *service) CreateAccount(ctx context.Context, accnt account.Account) erro
 
 func (s *service) GetAccount(ctx context.Context,
 	accntID account.AccountID) (*account.Account, error) {
+	err := accntID.Validate()
+	if err != nil {
+		return nil, account.ErrValidation
+	}
+
+	exists, err := s.accountRepo.IsAccountExists(ctx, accntID)
+	if err != nil {
+		return nil, errors.Wrap(err, "is account exists")
+	}
+
+	if !exists {
+		return nil, account.ErrAccountNotFound
+	}
+
 	accnt, err := s.accountRepo.GetAccount(ctx, accntID)
 	if err != nil {
 		return nil, errors.Wrap(err, "repo get account")

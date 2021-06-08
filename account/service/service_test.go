@@ -27,34 +27,54 @@ func TestAccountService(t *testing.T) {
 	balService := balance.NewService(balRepo)
 
 	accntRepo := postgres.NewAccountRepository(db)
-	accntService := accountservice.New(accntRepo, balService)
+	accountSvc := accountservice.New(accntRepo, balService)
 
 	ctx := context.TODO()
 	accountID := account.AccountID("john1234")
 	t.Run("create account", func(t *testing.T) {
-		err := accntService.CreateAccount(ctx, account.Account{
+		err := accountSvc.CreateAccount(ctx, account.Account{
 			AccountID: accountID,
 			Currency:  currency.USD,
 		})
 		require.NoError(t, err)
 
 		t.Run("validation error", func(t *testing.T) {
-			err = accntService.CreateAccount(ctx, account.Account{})
+			err = accountSvc.CreateAccount(ctx, account.Account{})
 			assert.ErrorIs(t, err, account.ErrValidation)
+		})
+
+		t.Run("alread exists", func(t *testing.T) {
+			err = accountSvc.CreateAccount(ctx, account.Account{
+				AccountID: accountID,
+				Currency:  currency.USD,
+			})
+			assert.ErrorIs(t, err, account.ErrAccountAlreadyExist)
 		})
 	})
 
 	t.Run("get account", func(t *testing.T) {
-		ac, err := accntService.GetAccount(ctx, accountID)
+		ac, err := accountSvc.GetAccount(ctx, accountID)
 		require.NoError(t, err)
 
 		assert.Equal(t, accountID, ac.AccountID)
 		assert.Equal(t, currency.USD, ac.Currency)
 		assert.True(t, decimal.Zero.Equal(ac.Balance))
+
+		t.Run("validation error", func(t *testing.T) {
+			ac, err = accountSvc.GetAccount(ctx, account.AccountID("##(#*"))
+			assert.ErrorIs(t, err, account.ErrValidation)
+			assert.Nil(t, ac)
+		})
+
+		t.Run("not found", func(t *testing.T) {
+			ac, err = accountSvc.GetAccount(ctx, account.AccountID("johntravolta"))
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
+			assert.Nil(t, ac)
+		})
 	})
 
 	t.Run("list accounts", func(t *testing.T) {
-		acs, err := accntService.ListAccounts(ctx)
+		acs, err := accountSvc.ListAccounts(ctx)
 		require.NoError(t, err)
 
 		assert.Len(t, acs, 1)

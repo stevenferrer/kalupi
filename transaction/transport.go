@@ -94,6 +94,9 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 
 	if errors.Is(err, ErrValidation) {
 		w.WriteHeader(http.StatusBadRequest)
+	} else if errors.Is(err, ErrSendingAccountNotFound) ||
+		errors.Is(err, ErrReceivingAccountNotFound) {
+		w.WriteHeader(http.StatusNotFound)
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
 	}

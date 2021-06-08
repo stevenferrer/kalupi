@@ -28,17 +28,17 @@ func TestXactService(t *testing.T) {
 
 	// setup accounts and ledgers
 	accountRepo := postgres.NewAccountRepository(db)
-	johnDoe := account.Account{
+	john := account.Account{
 		AccountID: account.AccountID("johndoe"),
 		Currency:  currency.USD,
 	}
-	_, err = accountRepo.CreateAccount(ctx, johnDoe)
+	_, err = accountRepo.CreateAccount(ctx, john)
 	require.NoError(t, err)
-	maryJane := account.Account{
+	mary := account.Account{
 		AccountID: account.AccountID("maryjane"),
 		Currency:  currency.USD,
 	}
-	_, err = accountRepo.CreateAccount(ctx, maryJane)
+	_, err = accountRepo.CreateAccount(ctx, mary)
 	require.NoError(t, err)
 
 	ledgerRepo := postgres.NewLedgerRepository(db)
@@ -54,62 +54,94 @@ func TestXactService(t *testing.T) {
 
 	t.Run("make deposit", func(t *testing.T) {
 		err = xactService.MakeDeposit(ctx, transaction.DepositXact{
-			AccountID: johnDoe.AccountID,
+			AccountID: john.AccountID,
 			Amount:    decimal.NewFromInt(100),
 		})
 		require.NoError(t, err)
 
 		// verify balance
-		bal, err := balService.GetAccntBal(ctx, johnDoe.AccountID)
+		bal, err := balService.GetAccntBal(ctx, john.AccountID)
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(100).Equal(bal.CurrentBal))
+
+		t.Run("account not found", func(t *testing.T) {
+			err = xactService.MakeDeposit(ctx, transaction.DepositXact{
+				AccountID: account.AccountID("johntravolta"),
+				Amount:    decimal.NewFromInt(100),
+			})
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
+		})
 	})
 
 	t.Run("make withdrawal", func(t *testing.T) {
 		err = xactService.MakeWithdrawal(ctx, transaction.WithdrawalXact{
-			AccountID: johnDoe.AccountID,
+			AccountID: john.AccountID,
 			Amount:    decimal.NewFromInt(25),
 		})
 		require.NoError(t, err)
 
 		// verify balance
-		bal, err := balService.GetAccntBal(ctx, johnDoe.AccountID)
+		bal, err := balService.GetAccntBal(ctx, john.AccountID)
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(75).Equal(bal.CurrentBal))
 
 		t.Run("insufficient balance", func(t *testing.T) {
 			err = xactService.MakeWithdrawal(ctx, transaction.WithdrawalXact{
-				AccountID: johnDoe.AccountID,
+				AccountID: john.AccountID,
 				Amount:    decimal.NewFromInt(200),
 			})
 			assert.ErrorIs(t, err, transaction.ErrInsufficientBalance)
+		})
+
+		t.Run("account not found", func(t *testing.T) {
+			err = xactService.MakeWithdrawal(ctx, transaction.WithdrawalXact{
+				AccountID: account.AccountID("johntravolta"),
+				Amount:    decimal.NewFromInt(100),
+			})
+			assert.ErrorIs(t, err, account.ErrAccountNotFound)
 		})
 	})
 
 	t.Run("make transfer", func(t *testing.T) {
 		err = xactService.MakeTransfer(ctx, transaction.TransferXact{
-			FromAccount: johnDoe.AccountID,
-			ToAccount:   maryJane.AccountID,
+			FromAccount: john.AccountID,
+			ToAccount:   mary.AccountID,
 			Amount:      decimal.NewFromInt(25),
 		})
 		require.NoError(t, err)
 
 		// verify john's balance
-		johnBal, err := balService.GetAccntBal(ctx, johnDoe.AccountID)
+		johnBal, err := balService.GetAccntBal(ctx, john.AccountID)
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(50).Equal(johnBal.CurrentBal))
 
 		// veryfy mary's balance
-		maryBal, err := balService.GetAccntBal(ctx, maryJane.AccountID)
+		maryBal, err := balService.GetAccntBal(ctx, mary.AccountID)
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(25).Equal(maryBal.CurrentBal))
 
 		t.Run("insufficient balance", func(t *testing.T) {
 			err = xactService.MakeWithdrawal(ctx, transaction.WithdrawalXact{
-				AccountID: johnDoe.AccountID,
+				AccountID: john.AccountID,
 				Amount:    decimal.NewFromInt(100),
 			})
 			assert.ErrorIs(t, err, transaction.ErrInsufficientBalance)
+		})
+
+		t.Run("sending or receving account not found", func(t *testing.T) {
+			err = xactService.MakeTransfer(ctx, transaction.TransferXact{
+				FromAccount: account.AccountID("johntravolta"),
+				ToAccount:   john.AccountID,
+				Amount:      decimal.NewFromInt(100),
+			})
+			assert.ErrorIs(t, err, transaction.ErrSendingAccountNotFound)
+
+			err = xactService.MakeTransfer(ctx, transaction.TransferXact{
+				FromAccount: john.AccountID,
+				ToAccount:   account.AccountID("johntravolta"),
+				Amount:      decimal.NewFromInt(100),
+			})
+			assert.ErrorIs(t, err, transaction.ErrReceivingAccountNotFound)
 		})
 	})
 }

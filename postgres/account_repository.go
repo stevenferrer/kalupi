@@ -63,3 +63,14 @@ func (ar *AccountRepository) ListAccounts(ctx context.Context) ([]*account.Accou
 
 	return acs, nil
 }
+
+func (ar *AccountRepository) IsAccountExists(ctx context.Context, accntID account.AccountID) (bool, error) {
+	stmnt := "select exists(select 1 from accounts where account_id=$1)"
+	var exists bool
+	err := ar.db.QueryRowContext(ctx, stmnt, accntID).Scan(&exists)
+	if err != nil && err != sql.ErrNoRows {
+		return false, errors.Wrap(err, "query row context")
+	}
+
+	return exists, nil
+}

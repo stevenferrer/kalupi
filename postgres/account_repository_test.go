@@ -44,4 +44,14 @@ func TestAccountRepository(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, as, 1)
 	})
+
+	t.Run("account exists", func(t *testing.T) {
+		exists, err := accountRepo.IsAccountExists(ctx, accountID)
+		require.NoError(t, err)
+		assert.True(t, exists)
+
+		exists, err = accountRepo.IsAccountExists(ctx, account.AccountID("idontexist"))
+		require.NoError(t, err)
+		assert.False(t, exists)
+	})
 }

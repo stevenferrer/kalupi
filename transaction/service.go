@@ -104,6 +104,16 @@ func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) (err error) {
 		return multierr.Combine(ErrValidation, err)
 	}
 
+	var exists bool
+	exists, err = s.accountRepo.IsAccountExists(ctx, dp.AccountID)
+	if err != nil {
+		return errors.Wrap(err, "is account exists")
+	}
+
+	if !exists {
+		return account.ErrAccountNotFound
+	}
+
 	var accnt *account.Account
 	accnt, err = s.accountRepo.GetAccount(ctx, dp.AccountID)
 	if err != nil {
@@ -163,6 +173,16 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err er
 		return multierr.Combine(ErrValidation, err)
 	}
 
+	var exists bool
+	exists, err = s.accountRepo.IsAccountExists(ctx, wd.AccountID)
+	if err != nil {
+		return errors.Wrap(err, "is account exists")
+	}
+
+	if !exists {
+		return account.ErrAccountNotFound
+	}
+
 	var accnt *account.Account
 	accnt, err = s.accountRepo.GetAccount(ctx, wd.AccountID)
 	if err != nil {
@@ -199,14 +219,14 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err er
 		}
 	}()
 
-	var accntBal *account.Balance
-	accntBal, err = s.balRepo.GetAccntBal(ctx, tx, accnt.AccountID)
+	var bal *account.Balance
+	bal, err = s.balRepo.GetAccntBal(ctx, tx, accnt.AccountID)
 	if err != nil {
 		err = errors.Wrap(err, "get account balance")
 		return
 	}
 
-	if wd.Amount.GreaterThan(accntBal.CurrentBal) {
+	if wd.Amount.GreaterThan(bal.CurrentBal) {
 		err = ErrInsufficientBalance
 		return
 	}
@@ -231,8 +251,26 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err er
 func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error) {
 	err = tr.Validate()
 	if err != nil {
-		fmt.Printf("%v\n", err)
 		return multierr.Combine(ErrValidation, err)
+	}
+
+	// verify sending and receiving account exists
+	fromExists, err := s.accountRepo.IsAccountExists(ctx, tr.FromAccount)
+	if err != nil {
+		return errors.Wrap(err, "is sending account exists")
+	}
+
+	if !fromExists {
+		return ErrSendingAccountNotFound
+	}
+
+	toExists, err := s.accountRepo.IsAccountExists(ctx, tr.ToAccount)
+	if err != nil {
+		return errors.Wrap(err, "is receiving account exists")
+	}
+
+	if !toExists {
+		return ErrReceivingAccountNotFound
 	}
 
 	var from *account.Account
