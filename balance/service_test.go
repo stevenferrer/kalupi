@@ -60,7 +60,6 @@ func TestBalanceService(t *testing.T) {
 
 	// john deposits 100USD
 	err = xactService.MakeDeposit(ctx, transaction.DepositXact{
-		XactNo:    transaction.XactNo("dp100"),
 		AccountID: johnDoe.AccountID,
 		Amount:    decimal.NewFromInt(100),
 	})
@@ -68,7 +67,6 @@ func TestBalanceService(t *testing.T) {
 
 	// john withdraws 25USD
 	err = xactService.MakeWithdrawal(ctx, transaction.WithdrawalXact{
-		XactNo:    transaction.XactNo("wd100"),
 		AccountID: johnDoe.AccountID,
 		Amount:    decimal.NewFromInt(25),
 	})
@@ -76,10 +74,9 @@ func TestBalanceService(t *testing.T) {
 
 	// john sends 25USD to mary
 	err = xactService.MakeTransfer(ctx, transaction.TransferXact{
-		XactNo:    "tr100",
-		FromAccnt: johnDoe.AccountID,
-		ToAccnt:   maryJane.AccountID,
-		Amount:    decimal.NewFromInt(25),
+		FromAccount: johnDoe.AccountID,
+		ToAccount:   maryJane.AccountID,
+		Amount:      decimal.NewFromInt(25),
 	})
 	require.NoError(t, err)
 

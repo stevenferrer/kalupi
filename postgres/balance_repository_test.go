@@ -127,7 +127,7 @@ func TestBalanceRepository(t *testing.T) {
 				assert.NoError(t, tx.Commit())
 			}()
 
-			// ideally, this should block and wait for the above!
+			// ideally, this should block and wait for the above code!
 			johnBal, err := balRepo.GetAccntBal(ctx, tx, john.AccountID)
 			require.NoError(t, err)
 

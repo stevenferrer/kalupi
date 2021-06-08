@@ -8,6 +8,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.2
 	github.com/lopezator/migrator v0.3.0
+	github.com/matoous/go-nanoid/v2 v2.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.2.0
 	github.com/stretchr/testify v1.7.0

@@ -29,7 +29,8 @@ func (br *BalanceRepository) GetAccntBal(ctx context.Context, tx tx.Tx, accntID 
 	}
 
 	// This will block when somebody is trying to insert in account_transactions
-	// i.e. share lock conflicts with row exclusive mode, hence, this will block
+	// i.e. share lock mode conflicts with row exclusive mode, hence, the select
+	// statement to account_balances view should block
 	_, err := txx.ExecContext(ctx, "lock table account_transactions in share mode")
 	if err != nil {
 		return nil, errors.Wrap(err, "acquire share lock")

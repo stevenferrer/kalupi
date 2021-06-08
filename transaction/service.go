@@ -4,14 +4,18 @@ import (
 	"context"
 	"fmt"
 
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"go.uber.org/multierr"
 
 	"github.com/sf9v/kalupi/account"
 	"github.com/sf9v/kalupi/balance"
+	"github.com/sf9v/kalupi/etc/tx"
 	"github.com/sf9v/kalupi/ledger"
 )
+
+// TODO: return the XactNo??
 
 // Service is the transaction service
 type Service interface {
@@ -22,24 +26,21 @@ type Service interface {
 
 // DepositXact is a deposit transaction
 type DepositXact struct {
-	XactNo    XactNo
 	AccountID account.AccountID
 	Amount    decimal.Decimal
 }
 
 // WithdrawalXact is a withdrawal transaction
 type WithdrawalXact struct {
-	XactNo    XactNo
 	AccountID account.AccountID
 	Amount    decimal.Decimal
 }
 
 // TransferXact is a transfer transaction
 type TransferXact struct {
-	XactNo    XactNo
-	FromAccnt account.AccountID
-	ToAccnt   account.AccountID
-	Amount    decimal.Decimal
+	FromAccount account.AccountID
+	ToAccount   account.AccountID
+	Amount      decimal.Decimal
 }
 
 type service struct {
@@ -76,13 +77,18 @@ func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) error {
 		return errors.Wrap(err, "get cash ledger no")
 	}
 
+	xactNo, err := newXactNo()
+	if err != nil {
+		return errors.Wrap(err, "new xact no")
+	}
+
 	tx, err := s.xactRepo.BeginTx(ctx)
 	if err != nil {
 		return errors.Wrap(err, "begin tx")
 	}
 
 	err = s.xactRepo.CreateXact(ctx, tx, Transaction{
-		XactNo:      dp.XactNo,
+		XactNo:      xactNo,
 		LedgerNo:    cashLedgerNo,
 		XactType:    XactTypeDebit, // debit ledger's cash
 		AccountID:   accnt.AccountID,
@@ -104,38 +110,59 @@ func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) error {
 	return nil
 }
 
-func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) error {
-	// TODO: Validate balance
-
-	accnt, err := s.accountRepo.GetAccount(ctx, wd.AccountID)
+func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err error) {
+	var accnt *account.Account
+	accnt, err = s.accountRepo.GetAccount(ctx, wd.AccountID)
 	if err != nil {
 		return errors.Wrap(err, "get account")
 	}
 
-	cashLedgerNo, err := ledger.GetCashLedgerNo(accnt.Currency)
+	var cashLedgerNo ledger.LedgerNo
+	cashLedgerNo, err = ledger.GetCashLedgerNo(accnt.Currency)
 	if err != nil {
 		return errors.Wrap(err, "get cash ledger no")
 	}
 
-	tx, err := s.xactRepo.BeginTx(ctx)
+	var xactNo XactNo
+	xactNo, err = newXactNo()
+	if err != nil {
+		return errors.Wrap(err, "new xact no")
+	}
+
+	var tx tx.Tx
+	tx, err = s.xactRepo.BeginTx(ctx)
 	if err != nil {
 		return errors.Wrap(err, "begin tx")
 	}
+	defer func() {
+		// rollback if there are errors
+		if err != nil {
+			if rollBackErr := tx.Rollback(); rollBackErr != nil {
+				err = multierr.Combine(err, rollBackErr)
+				return
+			}
+		}
 
-	accntBal, err := s.balRepo.GetAccntBal(ctx, tx, accnt.AccountID)
+		// commit if no errors
+		if commitErr := tx.Commit(); commitErr != nil {
+			err = multierr.Combine(err, commitErr)
+		}
+	}()
+
+	var accntBal *account.Balance
+	accntBal, err = s.balRepo.GetAccntBal(ctx, tx, accnt.AccountID)
 	if err != nil {
 		err = errors.Wrap(err, "get account balance")
-		txErr := tx.Rollback()
-		return multierr.Combine(err, txErr)
+		return
 	}
 
 	if wd.Amount.GreaterThan(accntBal.CurrentBal) {
-		txErr := tx.Rollback()
-		return multierr.Combine(ErrInsufficientBalance, txErr)
+		err = ErrInsufficientBalance
+		return
 	}
 
 	err = s.xactRepo.CreateXact(ctx, tx, Transaction{
-		XactNo:      wd.XactNo,
+		XactNo:      xactNo,
 		LedgerNo:    cashLedgerNo,
 		XactType:    XactTypeCredit, // credit ledger's cash
 		AccountID:   accnt.AccountID,
@@ -145,95 +172,120 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) error {
 	})
 	if err != nil {
 		err = errors.Wrap(err, "create wd xact")
-		txErr := tx.Rollback()
-		return multierr.Combine(err, txErr)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return errors.Wrap(err, "commit tx")
+		return
 	}
 
 	return nil
 }
 
-func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) error {
-	// TODO: validate balance
-
-	fromAccnt, err := s.accountRepo.GetAccount(ctx, tr.FromAccnt)
+func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error) {
+	var from *account.Account
+	from, err = s.accountRepo.GetAccount(ctx, tr.FromAccount)
 	if err != nil {
 		return errors.Wrap(err, "get from account")
 	}
 
-	toAccnt, err := s.accountRepo.GetAccount(ctx, tr.ToAccnt)
+	var to *account.Account
+	to, err = s.accountRepo.GetAccount(ctx, tr.ToAccount)
 	if err != nil {
-		return errors.Wrap(err, "get to account")
+		err = errors.Wrap(err, "get to account")
+		return
 	}
 
 	// validate that two accounts have the same currency
-	if fromAccnt.Currency != toAccnt.Currency {
-		return ErrMustHaveSameCurrency
+	if from.Currency != to.Currency {
+		err = ErrMustHaveSameCurrency
+		return
 	}
 
-	cashLedgerNo, err := ledger.GetCashLedgerNo(fromAccnt.Currency)
+	var cashLedgerNo ledger.LedgerNo
+	cashLedgerNo, err = ledger.GetCashLedgerNo(from.Currency)
 	if err != nil {
-		return errors.Wrap(err, "get cash ledger no")
+		err = errors.Wrap(err, "get cash ledger no")
+		return
 	}
 
-	tx, err := s.xactRepo.BeginTx(ctx)
+	var xactNo XactNo
+	xactNo, err = newXactNo()
 	if err != nil {
-		return errors.Wrap(err, "begin tx")
+		err = errors.Wrap(err, "new xact no")
+		return
 	}
-	// TODO: Use deferred rollback and commit??
 
-	frmAccntBal, err := s.balRepo.GetAccntBal(ctx, tx, fromAccnt.AccountID)
+	var tx tx.Tx
+	tx, err = s.xactRepo.BeginTx(ctx)
+	if err != nil {
+		err = errors.Wrap(err, "begin tx")
+		return
+	}
+	defer func() {
+		// rollback if there are errors
+		if err != nil {
+			if rollBackErr := tx.Rollback(); rollBackErr != nil {
+				err = multierr.Combine(err, rollBackErr)
+				return
+			}
+		}
+
+		// commit if no errors
+		if commitErr := tx.Commit(); commitErr != nil {
+			err = multierr.Combine(err, commitErr)
+		}
+	}()
+
+	var fromBal *account.Balance
+	fromBal, err = s.balRepo.GetAccntBal(ctx, tx, from.AccountID)
 	if err != nil {
 		err = errors.Wrap(err, "get from account balance")
-		txErr := tx.Rollback()
-		return multierr.Combine(err, txErr)
+		return
 	}
 
-	if tr.Amount.GreaterThan(frmAccntBal.CurrentBal) {
-		txErr := tx.Rollback()
-		return multierr.Combine(ErrInsufficientBalance, txErr)
+	// sending account must have sufficient balance
+	if tr.Amount.GreaterThan(fromBal.CurrentBal) {
+		err = ErrInsufficientBalance
+		return
 	}
 
 	// debit the sending account
 	err = s.xactRepo.CreateXact(ctx, tx, Transaction{
-		XactNo:      tr.XactNo,
+		XactNo:      xactNo,
 		LedgerNo:    cashLedgerNo,
 		XactType:    XactTypeCredit, // credit ledger's cash
-		AccountID:   fromAccnt.AccountID,
+		AccountID:   from.AccountID,
 		XactTypeExt: XactTypeExtSndTransfer, // debit sending account's cash
 		Amount:      tr.Amount,
-		Desc:        fmt.Sprintf("Outgoing cash transfer to %s", toAccnt.AccountID),
+		Desc:        fmt.Sprintf("Outgoing cash transfer to %s", to.AccountID),
 	})
 	if err != nil {
 		err = errors.Wrap(err, "create snd xact")
-		txErr := tx.Rollback()
-		return multierr.Combine(err, txErr)
+		return
 	}
 
 	// credit the receiving account
 	err = s.xactRepo.CreateXact(ctx, tx, Transaction{
-		XactNo:      tr.XactNo,
+		XactNo:      xactNo,
 		LedgerNo:    cashLedgerNo,
 		XactType:    XactTypeDebit, // debit ledger's cash
-		AccountID:   toAccnt.AccountID,
+		AccountID:   to.AccountID,
 		XactTypeExt: XactTypeExtRcvTransfer, // credit receiving account's cash
 		Amount:      tr.Amount,
-		Desc:        fmt.Sprintf("Incoming cash transfer from %s", fromAccnt.AccountID),
+		Desc:        fmt.Sprintf("Incoming cash transfer from %s", from.AccountID),
 	})
 	if err != nil {
 		err = errors.Wrap(err, "create rcv xact")
-		txErr := tx.Rollback()
-		return multierr.Combine(err, txErr)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return errors.Wrap(err, "commit tx")
+		return
 	}
 
 	return nil
+}
+
+const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func newXactNo() (XactNo, error) {
+	xactNoStr, err := gonanoid.Generate(alphabet, 12)
+	if err != nil {
+		return "", errors.Wrap(err, "generate")
+	}
+
+	return XactNo(xactNoStr), nil
 }

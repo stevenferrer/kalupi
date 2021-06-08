@@ -1,9 +1,8 @@
-package account
+package transaction
 
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -18,38 +17,38 @@ func NewHandler(s Service, logger kitlog.Logger) http.Handler {
 		kithttp.ServerErrorEncoder(encodeError),
 	}
 
-	createAccountHandler := kithttp.NewServer(
-		newCreateAccountEndpoint(s),
-		decodeCreateAccountRequest,
+	depositHandler := kithttp.NewServer(
+		newDepositEndpoint(s),
+		decodeDepositRequest,
 		encodeResponse,
 		opts...,
 	)
 
-	getAccountHandler := kithttp.NewServer(
-		newGetAccountEndpoint(s),
-		decodeGetAccountRequest,
+	withdrawHandler := kithttp.NewServer(
+		newWithdrawalEndpoint(s),
+		decodeWithdrawalRequest,
 		encodeResponse,
 		opts...,
 	)
 
-	listAccountsHandler := kithttp.NewServer(
-		newListAccountsEndpoint(s),
-		decodeListAccountsRequest,
+	paymentHandler := kithttp.NewServer(
+		newPaymentEndpoint(s),
+		decodePaymentRequest,
 		encodeResponse,
 		opts...,
 	)
 
 	r := mux.NewRouter()
 
-	r.Handle("/accounts", createAccountHandler).Methods(http.MethodPost)
-	r.Handle("/accounts/{accountId}", getAccountHandler).Methods(http.MethodGet)
-	r.Handle("/accounts", listAccountsHandler).Methods(http.MethodGet)
+	r.Handle("/xact/deposit", depositHandler).Methods(http.MethodPost)
+	r.Handle("/xact/withdraw", withdrawHandler).Methods(http.MethodPost)
+	r.Handle("/xact/payment", paymentHandler).Methods(http.MethodPost)
 
 	return r
 }
 
-func decodeCreateAccountRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request createAccountRequest
+func decodeDepositRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var request depositRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
@@ -57,19 +56,22 @@ func decodeCreateAccountRequest(_ context.Context, r *http.Request) (interface{}
 	return request, nil
 }
 
-func decodeGetAccountRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	vars := mux.Vars(r)
-
-	accountID, ok := vars["accountId"]
-	if !ok {
-		return nil, errors.New("bad route")
+func decodeWithdrawalRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var request withdrawalRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
 	}
 
-	return getAccountRequest{AccountID: AccountID(accountID)}, nil
+	return request, nil
 }
 
-func decodeListAccountsRequest(_ context.Context, _ *http.Request) (interface{}, error) {
-	return listAccountsRequest{}, nil
+func decodePaymentRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var request paymentRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+
+	return request, nil
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {

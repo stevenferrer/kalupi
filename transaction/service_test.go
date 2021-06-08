@@ -42,13 +42,8 @@ func TestXactService(t *testing.T) {
 	require.NoError(t, err)
 
 	ledgerRepo := postgres.NewLedgerRepository(db)
-	cashUSD := ledger.Ledger{
-		LedgerNo:    ledger.CashUSDLedgerNo,
-		AccountType: ledger.AccountTypeLiability,
-		Currency:    currency.USD,
-		Name:        "Cash USD",
-	}
-	err = ledgerRepo.CreateLedgersIfNotExist(ctx, cashUSD)
+	ledgerService := ledger.NewService(ledgerRepo)
+	err = ledgerService.CreateCashLedgers(ctx)
 	require.NoError(t, err)
 
 	balRepo := postgres.NewBalanceRepository(db)
@@ -58,9 +53,7 @@ func TestXactService(t *testing.T) {
 	xactService := transaction.NewService(accountRepo, ledgerRepo, xactRepo, balRepo)
 
 	t.Run("make deposit", func(t *testing.T) {
-		xactNo := transaction.XactNo("dp100")
 		err = xactService.MakeDeposit(ctx, transaction.DepositXact{
-			XactNo:    xactNo,
 			AccountID: johnDoe.AccountID,
 			Amount:    decimal.NewFromInt(100),
 		})
@@ -73,9 +66,7 @@ func TestXactService(t *testing.T) {
 	})
 
 	t.Run("make withdrawal", func(t *testing.T) {
-		xactNo := transaction.XactNo("wd100")
 		err = xactService.MakeWithdrawal(ctx, transaction.WithdrawalXact{
-			XactNo:    xactNo,
 			AccountID: johnDoe.AccountID,
 			Amount:    decimal.NewFromInt(25),
 		})
@@ -87,23 +78,19 @@ func TestXactService(t *testing.T) {
 		assert.True(t, decimal.NewFromInt(75).Equal(bal.CurrentBal))
 
 		t.Run("insufficient balance", func(t *testing.T) {
-			xactNo := transaction.XactNo("wd102")
 			err = xactService.MakeWithdrawal(ctx, transaction.WithdrawalXact{
-				XactNo:    xactNo,
 				AccountID: johnDoe.AccountID,
 				Amount:    decimal.NewFromInt(200),
 			})
-			assert.ErrorIs(t, transaction.ErrInsufficientBalance, err)
+			assert.ErrorIs(t, err, transaction.ErrInsufficientBalance)
 		})
 	})
 
 	t.Run("make transfer", func(t *testing.T) {
-		xactNo := transaction.XactNo("tr100")
 		err = xactService.MakeTransfer(ctx, transaction.TransferXact{
-			XactNo:    xactNo,
-			FromAccnt: johnDoe.AccountID,
-			ToAccnt:   maryJane.AccountID,
-			Amount:    decimal.NewFromInt(25),
+			FromAccount: johnDoe.AccountID,
+			ToAccount:   maryJane.AccountID,
+			Amount:      decimal.NewFromInt(25),
 		})
 		require.NoError(t, err)
 
@@ -118,13 +105,11 @@ func TestXactService(t *testing.T) {
 		assert.True(t, decimal.NewFromInt(25).Equal(maryBal.CurrentBal))
 
 		t.Run("insufficient balance", func(t *testing.T) {
-			xactNo := transaction.XactNo("tr102")
 			err = xactService.MakeWithdrawal(ctx, transaction.WithdrawalXact{
-				XactNo:    xactNo,
 				AccountID: johnDoe.AccountID,
 				Amount:    decimal.NewFromInt(100),
 			})
-			assert.ErrorIs(t, transaction.ErrInsufficientBalance, err)
+			assert.ErrorIs(t, err, transaction.ErrInsufficientBalance)
 		})
 	})
 }

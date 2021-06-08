@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/go-kit/kit/log"
@@ -28,7 +27,7 @@ func TestHTTPHandler(t *testing.T) {
 	accountRepo := postgres.NewAccountRepository(db)
 	accountService := account.NewService(accountRepo)
 
-	logger := log.NewJSONLogger(os.Stderr)
+	logger := log.NewNopLogger()
 	accountService = account.NewLoggingService(logger, accountService)
 
 	accountHandler := account.NewHandler(accountService, logger)
