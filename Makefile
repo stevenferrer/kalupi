@@ -3,6 +3,15 @@ GOBIN ?= $(GOPATH)/bin
 GOOS ?=linux"
 GOARCH ?=amd64
 
+.PHONY: build
+build:
+	go build -v -ldflags "-w -s" -o ./cmd/kalupi ./cmd/kalupi
+
+.PHONY: test
+test:
+	go test -v -cover -race ./...
+
+
 .PHONY: db
 db: test-db dev-db
 
@@ -26,6 +35,3 @@ dev-db:
 		postgres:12
 	docker exec -it kalupi-dev-db bash -c 'while ! pg_isready; do sleep 1; done;'
 
-.PHONY: test
-test:
-	go test -v -cover -race ./...
