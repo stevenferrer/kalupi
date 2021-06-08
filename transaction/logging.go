@@ -22,6 +22,7 @@ func (s *loggingService) MakeDeposit(ctx context.Context, dp DepositXact) (err e
 			"method", "make_deposit",
 			"account_id", dp.AccountID,
 			"amount", dp.Amount,
+			"took", time.Since(begin),
 			"err", err,
 		)
 	}(time.Now())
@@ -35,6 +36,7 @@ func (s *loggingService) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) 
 			"method", "make_withdrawal",
 			"account_id", wd.AccountID,
 			"amount", wd.Amount,
+			"took", time.Since(begin),
 			"err", err,
 		)
 	}(time.Now())
@@ -49,6 +51,7 @@ func (s *loggingService) MakeTransfer(ctx context.Context, tr TransferXact) (err
 			"from_account", tr.FromAccount,
 			"to_account", tr.ToAccount,
 			"amount", tr.Amount,
+			"took", time.Since(begin),
 			"err", err,
 		)
 	}(time.Now())
@@ -61,6 +64,7 @@ func (s *loggingService) ListTransfers(ctx context.Context) (xacts []*Transactio
 		_ = s.logger.Log(
 			"method", "list_transfers",
 			"count", len(xacts),
+			"took", time.Since(begin),
 			"err", err,
 		)
 	}(time.Now())
