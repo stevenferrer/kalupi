@@ -6,4 +6,8 @@ import "errors"
 var (
 	ErrInsufficientBalance = errors.New("insufficient balance")
 	ErrDifferentCurrencies = errors.New("different currencies")
+
+	ErrValidation     = errors.New("validation error")
+	ErrZeroAmount     = errors.New("zero amount")
+	ErrNegativeAmount = errors.New("negative amount")
 )

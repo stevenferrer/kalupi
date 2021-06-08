@@ -17,13 +17,6 @@ import (
 )
 
 // TODO: return the XactNo??
-// TODO: validate transactions (e.g. non-negative deposit, withdrawal and transfer)
-
-var (
-	ErrValidation     = errors.New("validatoin error")
-	ErrZeroAmount     = errors.New("zero amount")
-	ErrNegativeAmount = errors.New("negative amount")
-)
 
 // Service is the transaction service
 type Service interface {
@@ -137,10 +130,8 @@ func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) (err error) {
 	defer func() {
 		// rollback if there are errors
 		if err != nil {
-			if rollBackErr := tx.Rollback(); rollBackErr != nil {
-				err = multierr.Combine(err, rollBackErr)
-				return
-			}
+			_ = tx.Rollback()
+			return
 		}
 
 		// commit if no errors
@@ -198,10 +189,8 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err er
 	defer func() {
 		// rollback if there are errors
 		if err != nil {
-			if rollBackErr := tx.Rollback(); rollBackErr != nil {
-				err = multierr.Combine(err, rollBackErr)
-				return
-			}
+			_ = tx.Rollback()
+			return
 		}
 
 		// commit if no errors
@@ -283,10 +272,8 @@ func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error)
 	defer func() {
 		// rollback if there are errors
 		if err != nil {
-			if rollBackErr := tx.Rollback(); rollBackErr != nil {
-				err = multierr.Combine(err, rollBackErr)
-				return
-			}
+			_ = tx.Rollback()
+			return
 		}
 
 		// commit if no errors
