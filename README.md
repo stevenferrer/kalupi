@@ -53,7 +53,7 @@ $ ./cmd/kalupi
 
 ## Shoulders of the giants
 
-The double-entry account system implementation in this project is heavily based on the [ideas](https://stackoverflow.com/questions/59432964/relational-data-model-for-double-entry-accounting) of [PerformanceDBA](https://stackoverflow.com/users/484814/performancedba) and deserves most of the credit.
+The double-entry accounting implementation in this project is heavily based on the [ideas](https://stackoverflow.com/questions/59432964/relational-data-model-for-double-entry-accounting) of [PerformanceDBA](https://stackoverflow.com/users/484814/performancedba) and deserves most of the credit.
 
 ## Contributing
 
