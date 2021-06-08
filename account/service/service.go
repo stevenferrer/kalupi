@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	"go.uber.org/multierr"
 
 	"github.com/sf9v/kalupi/account"
 	"github.com/sf9v/kalupi/balance"
@@ -23,7 +24,12 @@ func New(accountRepo account.Repository, balService balance.Service) account.Ser
 }
 
 func (s *service) CreateAccount(ctx context.Context, accnt account.Account) error {
-	_, err := s.accountRepo.CreateAccount(ctx, accnt)
+	err := accnt.Validate()
+	if err != nil {
+		return multierr.Combine(account.ErrValidation, err)
+	}
+
+	_, err = s.accountRepo.CreateAccount(ctx, accnt)
 	if err != nil {
 		return errors.Wrap(err, "repo create account")
 	}

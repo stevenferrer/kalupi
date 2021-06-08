@@ -37,6 +37,11 @@ func TestAccountService(t *testing.T) {
 			Currency:  currency.USD,
 		})
 		require.NoError(t, err)
+
+		t.Run("validation error", func(t *testing.T) {
+			err = accntService.CreateAccount(ctx, account.Account{})
+			assert.ErrorIs(t, err, account.ErrValidation)
+		})
 	})
 
 	t.Run("get account", func(t *testing.T) {

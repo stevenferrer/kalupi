@@ -2,6 +2,11 @@ package account
 
 import (
 	"context"
+	"errors"
+)
+
+var (
+	ErrValidation = errors.New("validation error")
 )
 
 // Service is an account service

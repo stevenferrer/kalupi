@@ -6,6 +6,7 @@ require (
 	github.com/DATA-DOG/go-txdb v0.1.4
 	github.com/go-chi/chi/v5 v5.0.3
 	github.com/go-kit/kit v0.10.0
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/lib/pq v1.10.2
 	github.com/lopezator/migrator v0.3.0
 	github.com/matoous/go-nanoid/v2 v2.0.0

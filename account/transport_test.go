@@ -42,8 +42,8 @@ func TestHTTPHandler(t *testing.T) {
 	accountID := "johndoe"
 	t.Run("create account", func(t *testing.T) {
 		var req = map[string]interface{}{
-			"accountId": accountID,
-			"currency":  "USD",
+			"account_id": accountID,
+			"currency":   "USD",
 		}
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
@@ -54,6 +54,23 @@ func TestHTTPHandler(t *testing.T) {
 		rr := httptest.NewRecorder()
 		accountHandler.ServeHTTP(rr, httpReq)
 		require.Equal(t, http.StatusOK, rr.Code)
+
+		t.Run("validation error", func(t *testing.T) {
+			var req = map[string]interface{}{}
+			b, err = json.Marshal(req)
+			require.NoError(t, err)
+
+			httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, "/", bytes.NewBuffer(b))
+			require.NoError(t, err)
+
+			rr = httptest.NewRecorder()
+			accountHandler.ServeHTTP(rr, httpReq)
+			require.Equal(t, http.StatusBadRequest, rr.Code)
+
+			var resp = map[string]interface{}{}
+			err = json.NewDecoder(rr.Body).Decode(&resp)
+			require.NoError(t, err)
+		})
 	})
 
 	t.Run("get account", func(t *testing.T) {

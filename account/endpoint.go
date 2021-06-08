@@ -9,7 +9,7 @@ import (
 )
 
 type createAccountRequest struct {
-	AccountID AccountID         `json:"accountId"`
+	AccountID AccountID         `json:"account_id"`
 	Currency  currency.Currency `json:"currency"`
 }
 
@@ -22,10 +22,12 @@ func (r createAccountResponse) error() error { return r.Err }
 func newCreateAccountEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(createAccountRequest)
-		err := s.CreateAccount(ctx, Account{
+		ac := Account{
 			AccountID: req.AccountID,
-			Currency:  currency.USD,
-		})
+			Currency:  req.Currency,
+		}
+
+		err := s.CreateAccount(ctx, ac)
 		return createAccountResponse{Err: err}, nil
 	}
 }

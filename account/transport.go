@@ -43,10 +43,14 @@ func NewHandler(s Service, logger kitlog.Logger) http.Handler {
 
 	mux.Method(http.MethodPost, "/", createAccountHandler)
 	mux.Method(http.MethodGet, "/", listAccountsHandler)
-	mux.Method(http.MethodGet, "/{accountId}", getAccountHandler)
+	mux.Method(http.MethodGet, "/{id}", getAccountHandler)
 
 	return mux
 }
+
+var (
+	errBadRoute = errors.New("bad route")
+)
 
 func decodeCreateAccountRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request createAccountRequest
@@ -58,9 +62,9 @@ func decodeCreateAccountRequest(_ context.Context, r *http.Request) (interface{}
 }
 
 func decodeGetAccountRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	accountID := chi.URLParam(r, "accountId")
+	accountID := chi.URLParam(r, "id")
 	if accountID == "" {
-		return nil, errors.New("bad route")
+		return nil, errBadRoute
 	}
 
 	return getAccountRequest{AccountID: AccountID(accountID)}, nil
@@ -86,9 +90,12 @@ type errorer interface {
 // encode errors from business-logic
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	switch err {
-	default:
+
+	if errors.Is(err, ErrValidation) {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{"error": err.Error()})
 }
