@@ -2,7 +2,8 @@ package transaction
 
 import "errors"
 
+// List of transaction related errors
 var (
-	ErrInsufficientBalance  = errors.New("insiffucient balance")
-	ErrMustHaveSameCurrency = errors.New("must have same currency")
+	ErrInsufficientBalance = errors.New("insufficient balance")
+	ErrDifferentCurrencies = errors.New("different currencies")
 )

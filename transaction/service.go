@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
@@ -18,6 +19,12 @@ import (
 // TODO: return the XactNo??
 // TODO: validate transactions (e.g. non-negative deposit, withdrawal and transfer)
 
+var (
+	ErrValidation     = errors.New("validatoin error")
+	ErrZeroAmount     = errors.New("zero amount")
+	ErrNegativeAmount = errors.New("negative amount")
+)
+
 // Service is the transaction service
 type Service interface {
 	MakeDeposit(context.Context, DepositXact) error
@@ -31,10 +38,30 @@ type DepositXact struct {
 	Amount    decimal.Decimal
 }
 
+func (dp DepositXact) Validate() error {
+	return validation.Errors{
+		"account_id": dp.AccountID.Validate(),
+		"amount": validation.Validate(dp.Amount,
+			validation.By(nonZeroDecimal),
+			validation.By(nonNegativeDecimal),
+		),
+	}.Filter()
+}
+
 // WithdrawalXact is a withdrawal transaction
 type WithdrawalXact struct {
 	AccountID account.AccountID
 	Amount    decimal.Decimal
+}
+
+func (wd WithdrawalXact) Validate() error {
+	return validation.Errors{
+		"account_id": wd.AccountID.Validate(),
+		"amount": validation.Validate(wd.Amount,
+			validation.By(nonZeroDecimal),
+			validation.By(nonNegativeDecimal),
+		),
+	}.Filter()
 }
 
 // TransferXact is a transfer transaction
@@ -42,6 +69,17 @@ type TransferXact struct {
 	FromAccount account.AccountID
 	ToAccount   account.AccountID
 	Amount      decimal.Decimal
+}
+
+func (tr TransferXact) Validate() error {
+	return validation.Errors{
+		"from_account": tr.FromAccount.Validate(),
+		"to_account":   tr.ToAccount.Validate(),
+		"amount": validation.Validate(tr.Amount,
+			validation.By(nonZeroDecimal),
+			validation.By(nonNegativeDecimal),
+		),
+	}.Filter()
 }
 
 type service struct {
@@ -67,26 +105,49 @@ func NewService(
 	}
 }
 
-func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) error {
-	accnt, err := s.accountRepo.GetAccount(ctx, dp.AccountID)
+func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) (err error) {
+	err = dp.Validate()
+	if err != nil {
+		return multierr.Combine(ErrValidation, err)
+	}
+
+	var accnt *account.Account
+	accnt, err = s.accountRepo.GetAccount(ctx, dp.AccountID)
 	if err != nil {
 		return errors.Wrap(err, "get account")
 	}
 
-	cashLedgerNo, err := ledger.GetCashLedgerNo(accnt.Currency)
+	var cashLedgerNo ledger.LedgerNo
+	cashLedgerNo, err = ledger.GetCashLedgerNo(accnt.Currency)
 	if err != nil {
 		return errors.Wrap(err, "get cash ledger no")
 	}
 
-	xactNo, err := newXactNo()
+	var xactNo XactNo
+	xactNo, err = newXactNo()
 	if err != nil {
-		return errors.Wrap(err, "new xact no")
+		return errors.Wrap(err, "new xact number")
 	}
 
 	tx, err := s.xactRepo.BeginTx(ctx)
 	if err != nil {
 		return errors.Wrap(err, "begin tx")
+
 	}
+	defer func() {
+		// rollback if there are errors
+		if err != nil {
+			if rollBackErr := tx.Rollback(); rollBackErr != nil {
+				err = multierr.Combine(err, rollBackErr)
+				return
+			}
+		}
+
+		// commit if no errors
+		if commitErr := tx.Commit(); commitErr != nil {
+			err = multierr.Combine(err, commitErr)
+		}
+	}()
 
 	err = s.xactRepo.CreateXact(ctx, tx, Transaction{
 		XactNo:      xactNo,
@@ -99,19 +160,18 @@ func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) error {
 	})
 	if err != nil {
 		err = errors.Wrap(err, "create dp xact")
-		txErr := tx.Rollback()
-		return multierr.Combine(err, txErr)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return errors.Wrap(err, "commit tx")
+		return
 	}
 
 	return nil
 }
 
 func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err error) {
+	err = wd.Validate()
+	if err != nil {
+		return multierr.Combine(ErrValidation, err)
+	}
+
 	var accnt *account.Account
 	accnt, err = s.accountRepo.GetAccount(ctx, wd.AccountID)
 	if err != nil {
@@ -180,6 +240,12 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err er
 }
 
 func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error) {
+	err = tr.Validate()
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		return multierr.Combine(ErrValidation, err)
+	}
+
 	var from *account.Account
 	from, err = s.accountRepo.GetAccount(ctx, tr.FromAccount)
 	if err != nil {
@@ -189,35 +255,30 @@ func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error)
 	var to *account.Account
 	to, err = s.accountRepo.GetAccount(ctx, tr.ToAccount)
 	if err != nil {
-		err = errors.Wrap(err, "get to account")
-		return
+		return errors.Wrap(err, "get to account")
 	}
 
 	// validate that two accounts have the same currency
 	if from.Currency != to.Currency {
-		err = ErrMustHaveSameCurrency
-		return
+		return errors.Wrap(ErrDifferentCurrencies, "sending and receiving account have different currencies")
 	}
 
 	var cashLedgerNo ledger.LedgerNo
 	cashLedgerNo, err = ledger.GetCashLedgerNo(from.Currency)
 	if err != nil {
-		err = errors.Wrap(err, "get cash ledger no")
-		return
+		return errors.Wrap(err, "get cash ledger no")
 	}
 
 	var xactNo XactNo
 	xactNo, err = newXactNo()
 	if err != nil {
-		err = errors.Wrap(err, "new xact no")
-		return
+		return errors.Wrap(err, "new xact no")
 	}
 
 	var tx tx.Tx
 	tx, err = s.xactRepo.BeginTx(ctx)
 	if err != nil {
-		err = errors.Wrap(err, "begin tx")
-		return
+		return errors.Wrap(err, "begin tx")
 	}
 	defer func() {
 		// rollback if there are errors

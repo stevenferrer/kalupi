@@ -113,3 +113,69 @@ func TestXactService(t *testing.T) {
 		})
 	})
 }
+
+func TestXactValidations(t *testing.T) {
+	accnt1 := account.AccountID("johndoe")
+	accnt2 := account.AccountID("maryjane")
+	t.Run("deposit", func(t *testing.T) {
+		t.Run("zero", func(t *testing.T) {
+			dp := transaction.DepositXact{
+				AccountID: accnt1,
+				Amount:    decimal.Zero,
+			}
+			err := dp.Validate()
+			assert.Error(t, err)
+		})
+
+		t.Run("negative", func(t *testing.T) {
+			dp := transaction.DepositXact{
+				AccountID: accnt1,
+				Amount:    decimal.NewFromInt(-100),
+			}
+			err := dp.Validate()
+			assert.Error(t, err)
+		})
+	})
+
+	t.Run("withdrawal", func(t *testing.T) {
+		t.Run("zero", func(t *testing.T) {
+			wd := transaction.WithdrawalXact{
+				AccountID: accnt1,
+				Amount:    decimal.Zero,
+			}
+			err := wd.Validate()
+			assert.Error(t, err)
+		})
+
+		t.Run("negative", func(t *testing.T) {
+			wd := transaction.WithdrawalXact{
+				AccountID: accnt1,
+				Amount:    decimal.NewFromInt(-100),
+			}
+			err := wd.Validate()
+			assert.Error(t, err)
+		})
+	})
+
+	t.Run("transfer", func(t *testing.T) {
+		t.Run("zero", func(t *testing.T) {
+			wd := transaction.TransferXact{
+				FromAccount: accnt1,
+				ToAccount:   accnt2,
+				Amount:      decimal.Zero,
+			}
+			err := wd.Validate()
+			assert.Error(t, err)
+		})
+
+		t.Run("negative", func(t *testing.T) {
+			wd := transaction.TransferXact{
+				FromAccount: accnt1,
+				ToAccount:   accnt2,
+				Amount:      decimal.NewFromInt(-100),
+			}
+			err := wd.Validate()
+			assert.Error(t, err)
+		})
+	})
+}

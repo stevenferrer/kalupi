@@ -9,7 +9,7 @@ import (
 )
 
 type depositRequest struct {
-	AccountID account.AccountID `json:"accountId"`
+	AccountID account.AccountID `json:"account_id"`
 	Amount    decimal.Decimal   `json:"amount"`
 }
 
@@ -28,7 +28,7 @@ func newDepositEndpoint(s Service) endpoint.Endpoint {
 }
 
 type withdrawalRequest struct {
-	AccountID account.AccountID `json:"accountId"`
+	AccountID account.AccountID `json:"account_id"`
 	Amount    decimal.Decimal   `json:"amount"`
 }
 
@@ -47,14 +47,16 @@ func newWithdrawalEndpoint(s Service) endpoint.Endpoint {
 }
 
 type paymentRequest struct {
-	FromAccount account.AccountID `json:"from"`
-	ToAccount   account.AccountID `json:"to"`
+	FromAccount account.AccountID `json:"from_account"`
+	ToAccount   account.AccountID `json:"to_account"`
 	Amount      decimal.Decimal   `json:"amount"`
 }
 
 type paymentResponse struct {
 	Err error `json:"error,omitempty"`
 }
+
+func (r paymentResponse) error() error { return r.Err }
 
 func newPaymentEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {

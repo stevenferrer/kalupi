@@ -13,6 +13,14 @@ import (
 // AccountID is the account id
 type AccountID string
 
+func (accID AccountID) Validate() error {
+	return validation.Validate(string(accID),
+		validation.Required.Error("must not be empty"),
+		validation.Length(6, 64).Error("must have length between 6 and 64"),
+		is.Alphanumeric.Error("must contain english letters and digits only"),
+	)
+}
+
 // Account is an external account. These accounts are usually debit accounts.
 type Account struct {
 	AccountID AccountID         `json:"id"`
@@ -22,11 +30,7 @@ type Account struct {
 
 func (ac Account) Validate() error {
 	return validation.Errors{
-		"account_id": validation.Validate(ac.AccountID,
-			validation.Required.Error("must not be empty"),
-			validation.Length(6, 64).Error("must have length between 6 and 64"),
-			is.Alphanumeric.Error("must contain english letters and digits only"),
-		),
+		"account_id": ac.AccountID.Validate(),
 		"currency": validation.Validate(ac.Currency,
 			validation.Required.Error("currency is required"),
 			validation.By(func(value interface{}) error {

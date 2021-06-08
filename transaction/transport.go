@@ -3,6 +3,7 @@ package transaction
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -90,9 +91,12 @@ type errorer interface {
 // encode errors from business-logic
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	switch err {
-	default:
+
+	if errors.Is(err, ErrValidation) {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{"error": err.Error()})
 }

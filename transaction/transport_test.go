@@ -64,8 +64,8 @@ func TestHTTPHandler(t *testing.T) {
 
 	t.Run("make deposit", func(t *testing.T) {
 		var req = map[string]interface{}{
-			"accountId": john.AccountID,
-			"amount":    100,
+			"account_id": john.AccountID,
+			"amount":     100,
 		}
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
@@ -81,12 +81,29 @@ func TestHTTPHandler(t *testing.T) {
 		johnBal, err := balService.GetAccntBal(ctx, john.AccountID)
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(100).Equal(johnBal.CurrentBal), "john should now have a balance of 100")
+
+		t.Run("validation error", func(t *testing.T) {
+			req = map[string]interface{}{
+				"account_id": john.AccountID,
+				"amount":     0,
+			}
+
+			b, err = json.Marshal(req)
+			require.NoError(t, err)
+
+			httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, "/deposit", bytes.NewBuffer(b))
+			require.NoError(t, err)
+
+			rr = httptest.NewRecorder()
+			xactHandler.ServeHTTP(rr, httpReq)
+			require.Equal(t, http.StatusBadRequest, rr.Code)
+		})
 	})
 
 	t.Run("make withdrawal", func(t *testing.T) {
 		var req = map[string]interface{}{
-			"accountId": john.AccountID,
-			"amount":    25,
+			"account_id": john.AccountID,
+			"amount":     25,
 		}
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
@@ -102,13 +119,30 @@ func TestHTTPHandler(t *testing.T) {
 		johnBal, err := balService.GetAccntBal(ctx, john.AccountID)
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(75).Equal(johnBal.CurrentBal), "john should now have a balance of 75")
+
+		t.Run("validation error", func(t *testing.T) {
+			req = map[string]interface{}{
+				"account_id": john.AccountID,
+				"amount":     0,
+			}
+
+			b, err = json.Marshal(req)
+			require.NoError(t, err)
+
+			httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, "/withdraw", bytes.NewBuffer(b))
+			require.NoError(t, err)
+
+			rr = httptest.NewRecorder()
+			xactHandler.ServeHTTP(rr, httpReq)
+			require.Equal(t, http.StatusBadRequest, rr.Code)
+		})
 	})
 
 	t.Run("make payment", func(t *testing.T) {
 		var req = map[string]interface{}{
-			"from":   john.AccountID,
-			"to":     mary.AccountID,
-			"amount": 30,
+			"from_account": john.AccountID,
+			"to_account":   mary.AccountID,
+			"amount":       30,
 		}
 		b, err := json.Marshal(req)
 		require.NoError(t, err)
@@ -128,5 +162,23 @@ func TestHTTPHandler(t *testing.T) {
 		maryBal, err := balService.GetAccntBal(ctx, mary.AccountID)
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(30).Equal(maryBal.CurrentBal), "mary should now have a balance of 30")
+
+		t.Run("validation error", func(t *testing.T) {
+			req = map[string]interface{}{
+				"from_account": john.AccountID,
+				"to_account":   mary.AccountID,
+				"amount":       0,
+			}
+
+			b, err = json.Marshal(req)
+			require.NoError(t, err)
+
+			httpReq, err = http.NewRequestWithContext(ctx, http.MethodPost, "/payment", bytes.NewBuffer(b))
+			require.NoError(t, err)
+
+			rr = httptest.NewRecorder()
+			xactHandler.ServeHTTP(rr, httpReq)
+			require.Equal(t, http.StatusBadRequest, rr.Code)
+		})
 	})
 }
