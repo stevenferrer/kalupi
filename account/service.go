@@ -8,7 +8,7 @@ import (
 
 // Service is an account service
 type Service interface {
-	CreateAccount(context.Context, Account) (AccountID, error)
+	CreateAccount(context.Context, Account) error
 	GetAccount(context.Context, AccountID) (*Account, error)
 	ListAccounts(context.Context) ([]*Account, error)
 }
@@ -25,14 +25,13 @@ func NewService(accountRepo Repository) Service {
 	return &service{accountRepo: accountRepo}
 }
 
-func (s *service) CreateAccount(ctx context.Context,
-	accnt Account) (AccountID, error) {
-	id, err := s.accountRepo.CreateAccount(ctx, accnt)
+func (s *service) CreateAccount(ctx context.Context, accnt Account) error {
+	_, err := s.accountRepo.CreateAccount(ctx, accnt)
 	if err != nil {
-		return "", errors.Wrap(err, "repo create account")
+		return errors.Wrap(err, "repo create account")
 	}
 
-	return id, nil
+	return nil
 }
 
 func (s *service) GetAccount(ctx context.Context,
@@ -41,6 +40,8 @@ func (s *service) GetAccount(ctx context.Context,
 	if err != nil {
 		return nil, errors.Wrap(err, "repo get account")
 	}
+
+	// TODO: include balance
 
 	return accnt, nil
 }

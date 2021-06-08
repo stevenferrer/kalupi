@@ -26,7 +26,7 @@ func TestAccountService(t *testing.T) {
 	ctx := context.TODO()
 	accountID := account.AccountID("john1234")
 	t.Run("create account", func(t *testing.T) {
-		_, err := accntService.CreateAccount(ctx, account.Account{
+		err := accntService.CreateAccount(ctx, account.Account{
 			AccountID: accountID,
 			Currency:  currency.USD,
 		})

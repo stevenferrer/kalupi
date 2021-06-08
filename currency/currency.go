@@ -1,7 +1,9 @@
 package currency
 
 import (
+	"bytes"
 	"database/sql/driver"
+	"encoding/json"
 	"errors"
 )
 
@@ -56,20 +58,20 @@ func strToCurrency(s string) Currency {
 	return Currency(0)
 }
 
-// func (c Currency) MarshalJSON() ([]byte, error) {
-// 	buf := bytes.NewBuffer([]byte(`"`))
-// 	buf.WriteString(c.String())
-// 	buf.WriteByte(byte('"'))
-// 	return buf.Bytes(), nil
-// }
+func (c Currency) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer([]byte(`"`))
+	buf.WriteString(c.String())
+	buf.WriteByte(byte('"'))
+	return buf.Bytes(), nil
+}
 
-// func (c *Currency) UnmarshalJSON(data []byte) error {
-// 	var s string
-// 	err := json.Unmarshal(data, &s)
-// 	if err != nil {
-// 		return err
-// 	}
+func (c *Currency) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
 
-// 	*c = strToCurrency(s)
-// 	return nil
-// }
+	*c = strToCurrency(s)
+	return nil
+}

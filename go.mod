@@ -4,6 +4,8 @@ go 1.16
 
 require (
 	github.com/DATA-DOG/go-txdb v0.1.4
+	github.com/go-kit/kit v0.10.0
+	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.2
 	github.com/lopezator/migrator v0.3.0
 	github.com/pkg/errors v0.9.1

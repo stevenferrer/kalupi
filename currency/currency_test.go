@@ -1,6 +1,7 @@
 package currency_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,14 +20,14 @@ func TestCurrency(t *testing.T) {
 				c:      currency.Currency(0),
 				expect: "invalid",
 			},
-			// {
-			// 	c:      currency.EUR,
-			// 	expect: "EUR",
-			// },
 			{
 				c:      currency.USD,
 				expect: "USD",
 			},
+			// {
+			// 	c:      currency.EUR,
+			// 	expect: "EUR",
+			// },
 		}
 
 		for _, tt := range tc {
@@ -43,14 +44,14 @@ func TestCurrency(t *testing.T) {
 				c:      currency.Currency(0),
 				expect: false,
 			},
-			// {
-			// 	c:      currency.EUR,
-			// 	expect: true,
-			// },
 			{
 				c:      currency.USD,
 				expect: true,
 			},
+			// {
+			// 	c:      currency.EUR,
+			// 	expect: true,
+			// },
 		}
 
 		for _, tt := range tc {
@@ -71,19 +72,19 @@ func TestCurrency(t *testing.T) {
 		assert.NotNil(t, value)
 	})
 
-	// t.Run("json marshal or unmarshal", func(t *testing.T) {
-	// 	t.Run("marshal", func(t *testing.T) {
-	// 		b, err := json.Marshal(currency.USD)
-	// 		require.NoError(t, err)
-	// 		assert.Equal(t, `"USD"`, string(b))
-	// 	})
+	t.Run("json", func(t *testing.T) {
+		t.Run("marshal", func(t *testing.T) {
+			b, err := json.Marshal(currency.USD)
+			require.NoError(t, err)
+			assert.Equal(t, `"USD"`, string(b))
+		})
 
-	// 	t.Run("unmarshal", func(t *testing.T) {
-	// 		var c currency.Currency
-	// 		err := json.Unmarshal([]byte(`"USD"`), &c)
-	// 		require.NoError(t, err)
-	// 		assert.Equal(t, currency.USD, c)
-	// 	})
-	// })
+		t.Run("unmarshal", func(t *testing.T) {
+			var c currency.Currency
+			err := json.Unmarshal([]byte(`"USD"`), &c)
+			require.NoError(t, err)
+			assert.Equal(t, currency.USD, c)
+		})
+	})
 
 }
