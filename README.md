@@ -33,7 +33,7 @@ $ DSN=<postgres connection string> ./cmd/kalupi
 
 ## Docker
 
-The container image is located on [docker hub](https://hub.docker.com/repository/docker/stevenferrer/kalupi).
+The container image is hosted on [docker hub](https://hub.docker.com/repository/docker/stevenferrer/kalupi).
 
 Run using docker:
 ```sh
@@ -43,6 +43,10 @@ $ docker run -p 8000:8000 \
 ```
 
 ## Development
+
+Requirements:
+- [Go](https://golang.org/)
+- [Postgres](http://postgresql.org/)
 
 Clone the repository:
 
