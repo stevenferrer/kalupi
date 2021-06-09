@@ -1,3 +1,6 @@
+[![GoDoc Reference](https://pkg.go.dev/badge/github.com/sf9v/kalupi)](https://pkg.go.dev/github.com/sf9v/kalupi)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sf9v/kalupi)](https://goreportcard.com/report/github.com/sf9v/kalupi)
+
 # Kalupi
 
 Kalupi, a wallet service built with [go-kit](https://github.com/go-kit/kit).
