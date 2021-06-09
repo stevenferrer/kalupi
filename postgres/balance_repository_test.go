@@ -57,18 +57,18 @@ func TestBalanceRepository(t *testing.T) {
 
 	// seed some money
 	{
-		tx1, err := xactRepo.BeginTx(ctx)
+		tx, err := xactRepo.BeginTx(ctx)
 		require.NoError(t, err)
 
 		// john should have 0 balance
-		johnBal, err := balRepo.GetAccntBal(ctx, tx1, john.AccountID)
+		johnBal, err := balRepo.GetAccntBal(ctx, tx, john.AccountID)
 		require.NoError(t, err)
 		assert.True(t, decimal.NewFromInt(0).Equal(johnBal.CurrentBal),
 			"john should have an initial balance of 0")
 
 		dpXactNo, err := transaction.NewXactNo()
 		require.NoError(t, err)
-		err = xactRepo.CreateXact(ctx, tx1, transaction.Transaction{
+		err = xactRepo.CreateXact(ctx, tx, transaction.Transaction{
 			XactNo:      dpXactNo,
 			LedgerNo:    cashUSD.LedgerNo,
 			XactType:    transaction.XactTypeDebit,
@@ -78,11 +78,11 @@ func TestBalanceRepository(t *testing.T) {
 			Desc:        "Cash deposit from johndoe",
 		})
 		require.NoError(t, err)
-		require.NoError(t, tx1.Commit())
+		require.NoError(t, tx.Commit())
 	}
 
 	t.Run("concurrent access", func(t *testing.T) {
-		chanGetBal := make(chan bool)
+		chanBal := make(chan bool)
 
 		var wg sync.WaitGroup
 		wg.Add(1)
@@ -92,7 +92,7 @@ func TestBalanceRepository(t *testing.T) {
 			tx, err := xactRepo.BeginTx(ctx)
 			require.NoError(t, err)
 			defer func() {
-				assert.NoError(t, tx.Commit())
+				assert.NoError(t, tx.Commit(), "withdrawal xact commit")
 			}()
 
 			// simulate withdrawal
@@ -104,14 +104,14 @@ func TestBalanceRepository(t *testing.T) {
 				XactType:    transaction.XactTypeCredit,
 				AccountID:   john.AccountID,
 				XactTypeExt: transaction.XactTypeExtWithdrawal,
-				Amount:      decimal.NewFromInt(100),
+				Amount:      decimal.NewFromInt(50),
 				Desc:        "Cash withdrawal from johndoe",
 			})
-			require.NoError(t, err)
+			require.NoError(t, err, "withdrawal xact")
 
-			// this will ensure create xact comes first before the balance check
-			chanGetBal <- true
-			close(chanGetBal)
+			// this will ensure withdrawal comes first before balance check
+			chanBal <- true
+			close(chanBal)
 
 			// block and let others try to read balance
 			time.Sleep(10 * time.Millisecond)
@@ -121,22 +121,22 @@ func TestBalanceRepository(t *testing.T) {
 		go func() {
 			defer wg.Done()
 
-			<-chanGetBal
+			<-chanBal
 
 			tx, err := balRepo.BeginTx(ctx)
 			require.NoError(t, err)
 			defer func() {
-				assert.NoError(t, tx.Commit())
+				assert.NoError(t, tx.Commit(), "check balance commit")
 			}()
 
-			// ideally, this should block and wait for the above code!
 			johnBal, err := balRepo.GetAccntBal(ctx, tx, john.AccountID)
-			require.NoError(t, err)
+			require.NoError(t, err, "check balance")
 
-			assert.True(t, decimal.NewFromInt(0).Equal(johnBal.CurrentBal),
-				"john should have 0 balance after withdrawal")
+			assert.True(t, decimal.NewFromInt(50).Equal(johnBal.CurrentBal),
+				"john should have 50 balance after withdrawal")
 		}()
 
 		wg.Wait()
 	})
+
 }
