@@ -7,6 +7,7 @@ import (
 	"go.uber.org/multierr"
 
 	"github.com/sf9v/kalupi/account"
+	"github.com/sf9v/kalupi/etc/tx"
 )
 
 // Service is an account balance service
@@ -28,22 +29,29 @@ func NewService(balRepo Repository) Service {
 }
 
 // GetAccntBal retreives the account balance
-func (s *service) GetAccntBal(ctx context.Context, accntID account.AccountID) (*account.Balance, error) {
-	tx, err := s.balRepo.BeginTx(ctx)
+func (s *service) GetAccntBal(ctx context.Context, accntID account.AccountID) (accntBal *account.Balance, err error) {
+	var tx tx.Tx
+	tx, err = s.balRepo.BeginTx(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "begin tx")
 	}
+	defer func() {
+		// rollback if there are errors
+		if err != nil {
+			_ = tx.Rollback()
+			return
+		}
 
-	accntBal, err := s.balRepo.GetAccntBal(ctx, tx, accntID)
+		// commit if no errors
+		if commitErr := tx.Commit(); commitErr != nil {
+			err = multierr.Combine(err, commitErr)
+		}
+	}()
+
+	accntBal, err = s.balRepo.GetAccntBal(ctx, tx, accntID)
 	if err != nil {
 		err = errors.Wrap(err, "get accnt bal")
-		txErr := tx.Rollback()
-		return nil, multierr.Combine(err, txErr)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, errors.Wrap(err, "tx commit")
+		return
 	}
 
 	return accntBal, nil
