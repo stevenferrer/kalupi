@@ -20,10 +20,14 @@ type Transaction struct {
 	// XactNo is a transaction reference number
 	XactNo XactNo
 
+	// LedgerNo is the ledger number of internal account
 	LedgerNo ledger.LedgerNo
+	// XactType is the transaction type (debit or credit)
 	XactType XactType
 
-	AccountID   account.AccountID
+	// AccountId is the external account id
+	AccountID account.AccountID
+	// XactTypeExt is the external transaction type (deposit, withdrawal, transfer)
 	XactTypeExt XactTypeExt
 
 	// Amount is the amount of transaction
@@ -32,16 +36,22 @@ type Transaction struct {
 	// Desc is a short description of entry i.e. deposit, withdrawal
 	Desc string
 
+	// Ts is the timestamp
 	Ts *time.Time
 }
 
+// XactType is the transaction type
 type XactType int
 
+// List of transaction types
 const (
+	// XactTypeDebit is a debit transaction
 	XactTypeDebit XactType = iota + 1
+	// XactTypeCredit is a credit transaction
 	XactTypeCredit
 )
 
+// String implements Stringer
 func (tt XactType) String() string {
 	return [...]string{
 		"invalid",
@@ -50,10 +60,12 @@ func (tt XactType) String() string {
 	}[tt]
 }
 
+// Value implements driver.Valuer interface
 func (tt XactType) Value() (driver.Value, error) {
 	return tt.String(), nil
 }
 
+// Scan implements sql.Scanner interface
 func (tt *XactType) Scan(src interface{}) error {
 	if src == nil {
 		*tt = XactType(0)
@@ -69,6 +81,7 @@ func (tt *XactType) Scan(src interface{}) error {
 	return nil
 }
 
+// strToXactType takes a string and returns the transaction type
 func strToXactType(s string) XactType {
 	switch s {
 	case "Dr":
@@ -80,19 +93,24 @@ func strToXactType(s string) XactType {
 	return XactType(0)
 }
 
+// XactTypeExt is an external transaction type
 type XactTypeExt int
 
+// List of external transaction types
 const (
+	// XactTypeExt is a deposit transaction
 	XactTypeExtDeposit XactTypeExt = iota + 1
+	// XactTypeExtWithdrawal is a withdrawal transaction
 	XactTypeExtWithdrawal
-	// XactTypeExtSndTransfer is used when an account sends money to another account.
+	// XactTypeExtSndTransfer is a outgoing transfer.
 	// The sending account will be debited.
 	XactTypeExtSndTransfer
-	// XactTypeRcvTransfer is used when an account is receiving money from another account.
+	// XactTypeRcvTransfer is an incomming transfer.
 	// The recieving account will be credited.
 	XactTypeExtRcvTransfer
 )
 
+// String implements Stringer interface
 func (ttx XactTypeExt) String() string {
 	return [...]string{
 		"invalid",
@@ -103,10 +121,12 @@ func (ttx XactTypeExt) String() string {
 	}[ttx]
 }
 
+// Value implements driver.Valuer interface
 func (ttx XactTypeExt) Value() (driver.Value, error) {
 	return ttx.String(), nil
 }
 
+// Scan implements sql.Scanner interface
 func (ttx *XactTypeExt) Scan(src interface{}) error {
 	if src == nil {
 		*ttx = XactTypeExt(0)
@@ -122,6 +142,7 @@ func (ttx *XactTypeExt) Scan(src interface{}) error {
 	return nil
 }
 
+// strToXactTypeExt takes a string and returns the external transaction type
 func strToXactTypeExt(s string) XactTypeExt {
 	switch s {
 	case "Dp":

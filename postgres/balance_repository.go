@@ -10,18 +10,23 @@ import (
 	"github.com/sf9v/kalupi/etc/tx"
 )
 
+// BalanceRepository implements the balance repository
+// interface and uses postgres as back-end
 type BalanceRepository struct{ db *sql.DB }
 
 var _ balance.Repository = (*BalanceRepository)(nil)
 
+// NewBalanceRepository returns a balance repository
 func NewBalanceRepository(db *sql.DB) *BalanceRepository {
 	return &BalanceRepository{db: db}
 }
 
+// BeginTx begins a new tx
 func (br *BalanceRepository) BeginTx(ctx context.Context) (tx.Tx, error) {
 	return br.db.BeginTx(ctx, nil)
 }
 
+// GetAccntBal retrieves the account balance within tx
 func (br *BalanceRepository) GetAccntBal(ctx context.Context, tx tx.Tx, accntID account.AccountID) (*account.Balance, error) {
 	txx, ok := tx.(*sql.Tx)
 	if !ok {

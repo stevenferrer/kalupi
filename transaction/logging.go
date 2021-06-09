@@ -7,15 +7,18 @@ import (
 	"github.com/go-kit/kit/log"
 )
 
+// loggingService is a logging service middleware
 type loggingService struct {
 	logger log.Logger
 	s      Service
 }
 
+// NewLoggingService returns a new logging service middleware
 func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger, s}
 }
 
+// MakeDeposit logs the deposit params
 func (s *loggingService) MakeDeposit(ctx context.Context, dp DepositXact) (err error) {
 	defer func(begin time.Time) {
 		_ = s.logger.Log(
@@ -30,6 +33,7 @@ func (s *loggingService) MakeDeposit(ctx context.Context, dp DepositXact) (err e
 	return s.s.MakeDeposit(ctx, dp)
 }
 
+// MakeWithdrawal logs the withdrawal params
 func (s *loggingService) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err error) {
 	defer func(begin time.Time) {
 		_ = s.logger.Log(
@@ -44,6 +48,7 @@ func (s *loggingService) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) 
 	return s.s.MakeWithdrawal(ctx, wd)
 }
 
+// MakeTransfer logs the transfer params
 func (s *loggingService) MakeTransfer(ctx context.Context, tr TransferXact) (err error) {
 	defer func(begin time.Time) {
 		_ = s.logger.Log(
@@ -59,6 +64,7 @@ func (s *loggingService) MakeTransfer(ctx context.Context, tr TransferXact) (err
 	return s.s.MakeTransfer(ctx, tr)
 }
 
+// ListTransfers logs the list transfers params
 func (s *loggingService) ListTransfers(ctx context.Context) (xacts []*Transaction, err error) {
 	defer func(begin time.Time) {
 		_ = s.logger.Log(

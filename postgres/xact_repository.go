@@ -10,19 +10,25 @@ import (
 	"github.com/sf9v/kalupi/transaction"
 )
 
+// XactRepository implements the account transaction repository
+// interface and uses postgres as back-end
 type XactRepository struct{ db *sql.DB }
 
 var _ transaction.Repository = (*XactRepository)(nil)
 
+// NewXactRepository returns an account transactoin repository
 func NewXactRepository(db *sql.DB) *XactRepository {
 	return &XactRepository{db: db}
 }
 
+// BeginTx begins a new tx
 func (tr *XactRepository) BeginTx(ctx context.Context) (tx.Tx, error) {
 	return tr.db.BeginTx(ctx, nil)
 }
 
-func (tr *XactRepository) CreateXact(ctx context.Context, tx tx.Tx, xact transaction.Transaction) error {
+// CreateXact creates an account transaction within a tx
+func (tr *XactRepository) CreateXact(ctx context.Context,
+	tx tx.Tx, xact transaction.Transaction) error {
 	txx, ok := tx.(*sql.Tx)
 	if !ok {
 		return errors.New("expecting tx to be *sql.Tx")
@@ -44,6 +50,7 @@ func (tr *XactRepository) CreateXact(ctx context.Context, tx tx.Tx, xact transac
 	return nil
 }
 
+// ListXacts retrieves the list of account transactions
 func (tr *XactRepository) ListXacts(ctx context.Context) ([]*transaction.Transaction, error) {
 	stmnt := `select xact_no, ledger_no, xact_type, 
 			account_id, xact_type_ext, amount, "desc", ts 
@@ -74,6 +81,7 @@ func (tr *XactRepository) ListXacts(ctx context.Context) ([]*transaction.Transac
 	return xacts, nil
 }
 
+// ListTransfers retrieves the list of transfer related account transactions
 func (tr *XactRepository) ListTransfers(ctx context.Context) ([]*transaction.Transaction, error) {
 	stmnt := `select xact_no, ledger_no, xact_type, account_id, 
 		xact_type_ext, amount, "desc", ts from account_transactions

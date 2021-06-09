@@ -10,11 +10,13 @@ import (
 // Currency is a currency
 type Currency int
 
+// List of supported currencies
 const (
 	USD Currency = iota + 1
 	// EUR
 )
 
+// String implements Stringer
 func (c Currency) String() string {
 	return [...]string{
 		"invalid",
@@ -28,10 +30,12 @@ func (c Currency) IsValid() bool {
 	return c != Currency(0)
 }
 
+// Value implements driver.Valuer interface
 func (c Currency) Value() (driver.Value, error) {
 	return c.String(), nil
 }
 
+// Scan implements the sql.Scanner interface
 func (c *Currency) Scan(src interface{}) error {
 	if src == nil {
 		*c = Currency(0)
@@ -47,6 +51,7 @@ func (c *Currency) Scan(src interface{}) error {
 	return nil
 }
 
+// strToCurrency takes a string and returns the Currency
 func strToCurrency(s string) Currency {
 	switch s {
 	case "USD":
@@ -58,6 +63,7 @@ func strToCurrency(s string) Currency {
 	return Currency(0)
 }
 
+// MarshalJSON implements the json.Marshaler interface
 func (c Currency) MarshalJSON() ([]byte, error) {
 	buf := bytes.NewBuffer([]byte(`"`))
 	buf.WriteString(c.String())
@@ -65,6 +71,7 @@ func (c Currency) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalJSON implements the json.Unmarshaler interface
 func (c *Currency) UnmarshalJSON(data []byte) error {
 	var s string
 	err := json.Unmarshal(data, &s)

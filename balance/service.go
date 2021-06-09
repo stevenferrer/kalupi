@@ -9,20 +9,25 @@ import (
 	"github.com/sf9v/kalupi/account"
 )
 
+// Service is an account balance service
 type Service interface {
+	// GetAccntBal retrieives the account balance
 	GetAccntBal(context.Context, account.AccountID) (*account.Balance, error)
 }
 
+// service an a balance service implementation
 type service struct {
 	balRepo Repository
 }
 
 var _ Service = (*service)(nil)
 
+// NewService takes a balance repository and returns a balance service
 func NewService(balRepo Repository) Service {
 	return &service{balRepo: balRepo}
 }
 
+// GetAccntBal retreives the account balance
 func (s *service) GetAccntBal(ctx context.Context, accntID account.AccountID) (*account.Balance, error) {
 	tx, err := s.balRepo.BeginTx(ctx)
 	if err != nil {

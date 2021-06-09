@@ -12,6 +12,7 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 
+// NewHTTPHandler returns a transaction http handler
 func NewHTTPHandler(s Service, logger kitlog.Logger) http.Handler {
 	opts := []kithttp.ServerOption{
 		kithttp.ServerErrorHandler(transport.NewLogErrorHandler(logger)),

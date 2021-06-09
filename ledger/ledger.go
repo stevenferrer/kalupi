@@ -7,6 +7,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// LedgerNo is a ledger account number
 type LedgerNo string
 
 // Ledger is an internal ledger account

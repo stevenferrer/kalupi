@@ -5,7 +5,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// Payment is maps to transfer transaction
+// Payment is maps to transfer related transaction
 type Payment struct {
 	XactNo    XactNo            `json:"xact_no"`
 	Account   account.AccountID `json:"account"`
@@ -16,8 +16,9 @@ type Payment struct {
 	FromAccount account.AccountID `json:"from_account,omitempty"`
 }
 
+// xactsToPayments maps Transactions to Payments
 func xactsToPayments(xacts []*Transaction) []*Payment {
-	// NOTE: Send and receive always comes in pair
+	// Send and receive always come in pair
 	payments := []*Payment{}
 	for i := 0; i < len(xacts); i += 2 {
 		sndXact := xacts[i]

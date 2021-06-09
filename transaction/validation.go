@@ -4,6 +4,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// nonZeroDecimal validates the decimal is non-zero
 func nonZeroDecimal(value interface{}) error {
 	c, _ := value.(decimal.Decimal)
 	if c.IsZero() {
@@ -13,6 +14,7 @@ func nonZeroDecimal(value interface{}) error {
 	return nil
 }
 
+// nonNegativeDecimal validates the decimal is non-negative
 func nonNegativeDecimal(value interface{}) error {
 	c, _ := value.(decimal.Decimal)
 	if c.IsNegative() {

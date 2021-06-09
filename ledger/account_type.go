@@ -5,12 +5,16 @@ import (
 	"errors"
 )
 
+// AccountType is a ledger account type
 type AccountType int
 
+// List of ledger account types
 const (
+	// AccountTypeLiability is a liability account
 	AccountTypeLiability AccountType = iota + 1
 )
 
+// String implements Stringer interface
 func (at AccountType) String() string {
 	return [...]string{
 		"invalid",
@@ -18,10 +22,12 @@ func (at AccountType) String() string {
 	}[at]
 }
 
+// Value implements the driver.Valuer interface
 func (at AccountType) Value() (driver.Value, error) {
 	return at.String(), nil
 }
 
+// Scan implements the sql.Scanner interface
 func (at *AccountType) Scan(src interface{}) error {
 	if src == nil {
 		*at = AccountType(0)
@@ -37,6 +43,7 @@ func (at *AccountType) Scan(src interface{}) error {
 	return nil
 }
 
+// strToAccountType takes a string and returns the account type
 func strToAccountType(s string) AccountType {
 	switch s {
 	case "AL":

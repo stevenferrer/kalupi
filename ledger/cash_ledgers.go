@@ -1,22 +1,22 @@
 package ledger
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/sf9v/kalupi/currency"
 )
 
-// Ledger account numbers
+// List of cash ledger account numbers
 const (
 	CashUSDLedgerNo LedgerNo = "100"
 	// CashEURLedgerNo LedgerNo = "110"
 )
 
+// cashLedgers contains the list of cash ledgers
 var cashLedgers = [...]Ledger{
 	cashUSD,
 	// cashEUR,
 }
 
+// List of cash ledgers
 var (
 	cashUSD = Ledger{
 		LedgerNo:    CashUSDLedgerNo,
@@ -33,11 +33,12 @@ var (
 	// }
 )
 
+//GetCashLedgerNo retrieives the cash ledger number for the given currency
 func GetCashLedgerNo(curr currency.Currency) (LedgerNo, error) {
 	switch curr {
 	case currency.USD:
 		return CashUSDLedgerNo, nil
 	}
 
-	return "", errors.Errorf("currency %s is not supported", curr)
+	return "", currency.ErrUnsupportedCurrency
 }

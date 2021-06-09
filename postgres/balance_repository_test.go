@@ -49,7 +49,7 @@ func TestBalanceRepository(t *testing.T) {
 		Currency:    currency.USD,
 		Name:        "Cash USD",
 	}
-	err = ledgerRepo.CreateLedgersIfNotExist(ctx, cashUSD)
+	err = ledgerRepo.CreateLedgersIfNotExists(ctx, cashUSD)
 	require.NoError(t, err)
 
 	balRepo := postgres.NewBalanceRepository(db)

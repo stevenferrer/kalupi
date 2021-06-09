@@ -9,17 +9,21 @@ import (
 	"github.com/sf9v/kalupi/ledger"
 )
 
+// LedgerRepository implements the ledger repository
+// interface and uses postgres as back-end
 type LedgerRepository struct{ db *sql.DB }
 
 var _ ledger.Repository = (*LedgerRepository)(nil)
 
+// NewLedgerRepository returns a new ledger repository
 func NewLedgerRepository(db *sql.DB) *LedgerRepository {
 	return &LedgerRepository{db: db}
 }
 
-func (lr *LedgerRepository) CreateLedgersIfNotExist(ctx context.Context, lgs ...ledger.Ledger) error {
+// CreateAccountLedgerIfNotExists will create the ledgers if it doesn't exists in database yet
+func (lr *LedgerRepository) CreateLedgersIfNotExists(ctx context.Context, lgs ...ledger.Ledger) error {
 	for _, lg := range lgs {
-		exist, err := lr.isLedgerExist(ctx, lg.LedgerNo)
+		exist, err := lr.isLedgerExists(ctx, lg.LedgerNo)
 		if err != nil {
 			return errors.Wrap(err, "is ledger exist")
 		}
@@ -35,6 +39,7 @@ func (lr *LedgerRepository) CreateLedgersIfNotExist(ctx context.Context, lgs ...
 	return nil
 }
 
+// GetLedger retrieves the ledger
 func (lr *LedgerRepository) GetLedger(ctx context.Context, ledgerNo ledger.LedgerNo) (*ledger.Ledger, error) {
 	stmnt := `select ledger_no, account_type, currency, name
 		from ledgers where ledger_no = $1`
@@ -48,6 +53,7 @@ func (lr *LedgerRepository) GetLedger(ctx context.Context, ledgerNo ledger.Ledge
 	return &lg, nil
 }
 
+// ListLedgers retrieves the list of ledgers
 func (lr *LedgerRepository) ListLedgers(ctx context.Context) ([]*ledger.Ledger, error) {
 	stmnt := `select ledger_no, account_type, currency, name from ledgers`
 
@@ -70,6 +76,7 @@ func (lr *LedgerRepository) ListLedgers(ctx context.Context) ([]*ledger.Ledger, 
 	return lgs, nil
 }
 
+// createLedger is a helper method for creating a ledger
 func (lr *LedgerRepository) createLedger(ctx context.Context, lg ledger.Ledger) error {
 	stmnt := `insert into ledgers (ledger_no, account_type, currency, name)
 		values ($1, $2, $3, $4)`
@@ -82,7 +89,8 @@ func (lr *LedgerRepository) createLedger(ctx context.Context, lg ledger.Ledger) 
 	return nil
 }
 
-func (lr *LedgerRepository) isLedgerExist(ctx context.Context, ledgerNo ledger.LedgerNo) (bool, error) {
+// isLedgerExists is a helper method for checking ledger existence
+func (lr *LedgerRepository) isLedgerExists(ctx context.Context, ledgerNo ledger.LedgerNo) (bool, error) {
 	stmnt := "select exists(select 1 from ledgers where ledger_no=$1)"
 	var exists bool
 	err := lr.db.QueryRowContext(ctx, stmnt, ledgerNo).Scan(&exists)

@@ -29,9 +29,12 @@ func TestLedgerRepository(t *testing.T) {
 			Currency:    currency.USD,
 			Name:        "Cash USD",
 		}
-		err := ledgerRepo.CreateLedgersIfNotExist(ctx, cashLedger)
+		// create ledger
+		err := ledgerRepo.CreateLedgersIfNotExists(ctx, cashLedger)
 		require.NoError(t, err)
-		err = ledgerRepo.CreateLedgersIfNotExist(ctx, cashLedger)
+		// create ledger (again), this should do nothing since we already
+		// created the ledger above
+		err = ledgerRepo.CreateLedgersIfNotExists(ctx, cashLedger)
 		require.NoError(t, err)
 	})
 

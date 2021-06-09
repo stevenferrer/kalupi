@@ -16,13 +16,15 @@ import (
 	"github.com/sf9v/kalupi/ledger"
 )
 
-// TODO: return the XactNo??
-
 // Service is the transaction service
 type Service interface {
+	// MakeDeposity creates a deposit transaction
 	MakeDeposit(context.Context, DepositXact) error
+	// MakeWithdrawal creates a withdrawal transaction
 	MakeWithdrawal(context.Context, WithdrawalXact) error
+	// MakeTransfer creates a transfer transaction
 	MakeTransfer(context.Context, TransferXact) error
+	// ListTransfers retrieves the transfer related transactions
 	ListTransfers(context.Context) ([]*Transaction, error)
 }
 
@@ -32,6 +34,7 @@ type DepositXact struct {
 	Amount    decimal.Decimal
 }
 
+// Validate valiates the deposit params
 func (dp DepositXact) Validate() error {
 	return validation.Errors{
 		"account_id": dp.AccountID.Validate(),
@@ -48,6 +51,7 @@ type WithdrawalXact struct {
 	Amount    decimal.Decimal
 }
 
+// Validate validates the withdrawal params
 func (wd WithdrawalXact) Validate() error {
 	return validation.Errors{
 		"account_id": wd.AccountID.Validate(),
@@ -65,6 +69,7 @@ type TransferXact struct {
 	Amount      decimal.Decimal
 }
 
+// Validate validates the transfer params
 func (tr TransferXact) Validate() error {
 	return validation.Errors{
 		"from_account": tr.FromAccount.Validate(),
@@ -76,6 +81,7 @@ func (tr TransferXact) Validate() error {
 	}.Filter()
 }
 
+// services is a transaction service implementation
 type service struct {
 	accountRepo account.Repository
 	ledgerRepo  ledger.Repository
@@ -85,6 +91,8 @@ type service struct {
 
 var _ Service = (*service)(nil)
 
+// NewService takes an account, ledger, xact,
+// balance repo and returns a transaction service
 func NewService(
 	accountRepo account.Repository,
 	ledgerRepo ledger.Repository,
@@ -99,6 +107,7 @@ func NewService(
 	}
 }
 
+// MakeDeposity creates a deposit transaction
 func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) (err error) {
 	err = dp.Validate()
 	if err != nil {
@@ -168,6 +177,7 @@ func (s *service) MakeDeposit(ctx context.Context, dp DepositXact) (err error) {
 	return nil
 }
 
+// MakeWithdrawal creates a withdrawal transaction
 func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err error) {
 	err = wd.Validate()
 	if err != nil {
@@ -249,6 +259,7 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err er
 	return nil
 }
 
+// MakeTransfer creates a transfer transaction
 func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error) {
 	err = tr.Validate()
 	if err != nil {
@@ -367,14 +378,19 @@ func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error)
 	return nil
 }
 
+// ListTransfers retrieves the transfer related transactions
 func (s *service) ListTransfers(ctx context.Context) ([]*Transaction, error) {
 	return s.xactRepo.ListTransfers(ctx)
 }
 
-const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	alphabet  = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	xactNoLen = 12
+)
 
+// NewXactNo generates a transaction number
 func NewXactNo() (XactNo, error) {
-	xactNoStr, err := gonanoid.Generate(alphabet, 12)
+	xactNoStr, err := gonanoid.Generate(alphabet, xactNoLen)
 	if err != nil {
 		return "", errors.Wrap(err, "generate")
 	}

@@ -8,17 +8,8 @@ import (
 	"github.com/lopezator/migrator"
 )
 
-// defaultOpts is the migration options
+// defaultOpts is the default migration options
 var defaultOpts = []migrator.Option{migrator.WithLogger(newNopLogger())}
-
-// nopLogger is a nop migrator.Logger
-type nopLogger struct{}
-
-func newNopLogger() migrator.Logger {
-	return &nopLogger{}
-}
-
-func (l *nopLogger) Printf(string, ...interface{}) {}
 
 // Migrate migrates the database to the latest version
 func Migrate(db *sql.DB, opts ...migrator.Option) error {
@@ -35,6 +26,15 @@ func Migrate(db *sql.DB, opts ...migrator.Option) error {
 
 	return m.Migrate(db)
 }
+
+// nopLogger is a nop logger for migrator
+type nopLogger struct{}
+
+func newNopLogger() migrator.Logger {
+	return &nopLogger{}
+}
+
+func (l *nopLogger) Printf(string, ...interface{}) {}
 
 // migrations are list of database migrations
 var migrations = migrator.Migrations(
