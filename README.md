@@ -38,7 +38,7 @@ $ DSN=<postgres connection string> ./cmd/kalupi
 
 ## Docker
 
-The container image is hosted on [docker hub](https://hub.docker.com/repository/docker/stevenferrer/kalupi).
+The container image is hosted on [docker hub](https://hub.docker.com/r/stevenferrer/kalupi).
 
 Run using docker:
 ```sh
