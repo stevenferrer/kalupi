@@ -106,7 +106,7 @@ const (
 	// The sending account will be debited.
 	XactTypeExtSndTransfer
 	// XactTypeRcvTransfer is an incomming transfer.
-	// The receving account will be credited.
+	// The receiving account will be credited.
 	XactTypeExtRcvTransfer
 )
 

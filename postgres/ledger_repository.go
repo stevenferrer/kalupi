@@ -20,7 +20,7 @@ func NewLedgerRepository(db *sql.DB) *LedgerRepository {
 	return &LedgerRepository{db: db}
 }
 
-// CreateAccountLedgersIfNotExists will create the ledgers if it doesn't exists in database yet
+// CreateLedgersIfNotExists will create the ledgers if it doesn't exists in database yet
 func (lr *LedgerRepository) CreateLedgersIfNotExists(ctx context.Context, lgs ...ledger.Ledger) error {
 	for _, lg := range lgs {
 		exist, err := lr.isLedgerExists(ctx, lg.LedgerNo)

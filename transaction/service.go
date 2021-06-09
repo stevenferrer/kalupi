@@ -261,28 +261,9 @@ func (s *service) MakeWithdrawal(ctx context.Context, wd WithdrawalXact) (err er
 
 // MakeTransfer creates a transfer transaction
 func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error) {
-	err = tr.Validate()
+	err = s.validateTransfer(ctx, tr)
 	if err != nil {
-		return multierr.Combine(ErrValidation, err)
-	}
-
-	// verify sending and receiving account exists
-	fromExists, err := s.accountRepo.IsAccountExists(ctx, tr.FromAccount)
-	if err != nil {
-		return errors.Wrap(err, "is sending account exists")
-	}
-
-	if !fromExists {
-		return ErrSendingAccountNotFound
-	}
-
-	toExists, err := s.accountRepo.IsAccountExists(ctx, tr.ToAccount)
-	if err != nil {
-		return errors.Wrap(err, "is receiving account exists")
-	}
-
-	if !toExists {
-		return ErrReceivingAccountNotFound
+		return err
 	}
 
 	var from *account.Account
@@ -373,6 +354,34 @@ func (s *service) MakeTransfer(ctx context.Context, tr TransferXact) (err error)
 	if err != nil {
 		err = errors.Wrap(err, "create rcv xact")
 		return
+	}
+
+	return nil
+}
+
+func (s *service) validateTransfer(ctx context.Context, tr TransferXact) error {
+	err := tr.Validate()
+	if err != nil {
+		return multierr.Combine(ErrValidation, err)
+	}
+
+	// verify sending and receiving account exists
+	fromExists, err := s.accountRepo.IsAccountExists(ctx, tr.FromAccount)
+	if err != nil {
+		return errors.Wrap(err, "is sending account exists")
+	}
+
+	if !fromExists {
+		return ErrSendingAccountNotFound
+	}
+
+	toExists, err := s.accountRepo.IsAccountExists(ctx, tr.ToAccount)
+	if err != nil {
+		return errors.Wrap(err, "is receiving account exists")
+	}
+
+	if !toExists {
+		return ErrReceivingAccountNotFound
 	}
 
 	return nil
