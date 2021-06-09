@@ -2,6 +2,10 @@ GOPATH ?= $(shell go env GOPATH)
 GOBIN ?= $(GOPATH)/bin
 GOOS ?=linux"
 GOARCH ?=amd64
+IMAGE_REGISTRY=stevenferrer
+# IMAGE_TAG=$(shell git describe --tags --abbrev=0)
+IMAGE_TAG=0.1.0-rc1
+IMAGE_NAME=kalupi
 
 .PHONY: build
 build:
@@ -35,3 +39,11 @@ dev-db:
 		postgres:12
 	docker exec -it kalupi-dev-db bash -c 'while ! pg_isready; do sleep 1; done;'
 
+
+.PHONY: build-image
+build-image:
+	docker build -t ${IMAGE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
+
+.PHONY: push-image
+push-image:
+	docker push ${IMAGE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
