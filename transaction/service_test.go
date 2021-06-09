@@ -128,7 +128,7 @@ func TestXactService(t *testing.T) {
 			assert.ErrorIs(t, err, transaction.ErrInsufficientBalance)
 		})
 
-		t.Run("sending or receving account not found", func(t *testing.T) {
+		t.Run("sending or receiving account not found", func(t *testing.T) {
 			err = xactSvc.MakeTransfer(ctx, transaction.TransferXact{
 				FromAccount: account.AccountID("johntravolta"),
 				ToAccount:   john.AccountID,
