@@ -10,11 +10,26 @@ Kalupi, a wallet service built with [go-kit](https://github.com/go-kit/kit).
 
 ## Limitations
 
-At the moment, only payments within the same currency is supported. 
+- Only payments within the same currency is supported
+- Only USD is supported, other currencies can be supported with relative ease
 
 ## Documentation
 
 The REST API documentation is located at [docs/api.md](/docs/api.md).
+
+## Build
+
+Build the server:
+
+```sh
+$ go build -v -ldflags "-w -s" -o ./cmd/kalupi ./cmd/kalupi
+```
+
+Run the server:
+
+```sh
+$ DSN=<postgres connection string> ./cmd/kalupi
+```
 
 ## Development
 
@@ -37,18 +52,6 @@ Run the tests:
 
 ```sh
 $ go test -v -cover -race ./...
-```
-
-Build the server:
-
-```sh
-$ go build -v -ldflags "-w -s" -o ./cmd/kalupi ./cmd/kalupi
-```
-
-Run the server:
-
-```sh
-$ ./cmd/kalupi
 ```
 
 ## Shoulders of the giants
