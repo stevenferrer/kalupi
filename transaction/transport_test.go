@@ -60,7 +60,7 @@ func TestHTTPHandler(t *testing.T) {
 	logger := log.NewNopLogger()
 	xactService = transaction.NewLoggingService(logger, xactService)
 
-	xactHandler := transaction.NewHandler(xactService, logger)
+	xactHandler := transaction.NewHTTPHandler(xactService, logger)
 
 	t.Run("make deposit", func(t *testing.T) {
 		var req = map[string]interface{}{

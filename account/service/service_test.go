@@ -48,7 +48,7 @@ func TestAccountService(t *testing.T) {
 				AccountID: accountID,
 				Currency:  currency.USD,
 			})
-			assert.ErrorIs(t, err, account.ErrAccountAlreadyExist)
+			assert.ErrorIs(t, err, account.ErrAccountAlreadyExists)
 		})
 	})
 

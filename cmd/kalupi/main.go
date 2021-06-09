@@ -90,8 +90,8 @@ func main() {
 
 	mux := chi.NewMux()
 
-	mux.Mount("/accounts", account.NewHandler(as, httpLogger))
-	mux.Mount("/t", transaction.NewHandler(xs, httpLogger))
+	mux.Mount("/accounts", account.NewHTTPHandler(as, httpLogger))
+	mux.Mount("/t", transaction.NewHTTPHandler(xs, httpLogger))
 
 	srvr := &http.Server{
 		Addr:           *httpAddr,

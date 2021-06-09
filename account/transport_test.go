@@ -35,7 +35,7 @@ func TestHTTPHandler(t *testing.T) {
 	logger := log.NewNopLogger()
 	accountService = account.NewLoggingService(logger, accountService)
 
-	accountHandler := account.NewHandler(accountService, logger)
+	accountHandler := account.NewHTTPHandler(accountService, logger)
 
 	ctx := context.TODO()
 

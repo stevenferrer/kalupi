@@ -4,6 +4,10 @@ import "errors"
 
 // List of account related errors
 var (
-	ErrAccountAlreadyExist = errors.New("account already exist")
-	ErrAccountNotFound     = errors.New("account not found")
+	// ErrAccountAlreadyExists is an error when creating an account that already exists
+	ErrAccountAlreadyExists = errors.New("account already exists")
+	// ErrAccountNotFound is an error when retrieving an account that doesn't exists
+	ErrAccountNotFound = errors.New("account not found")
+	// ErrValidation is an account related validation error
+	ErrValidation = errors.New("validation error")
 )

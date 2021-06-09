@@ -12,7 +12,8 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 
-func NewHandler(s Service, logger kitlog.Logger) http.Handler {
+// NewHTTPHandler returns the account http handler
+func NewHTTPHandler(s Service, logger kitlog.Logger) http.Handler {
 	opts := []kithttp.ServerOption{
 		kithttp.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 		kithttp.ServerErrorEncoder(encodeError),
@@ -83,6 +84,7 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 	return json.NewEncoder(w).Encode(response)
 }
 
+// errorer is an error interface for response
 type errorer interface {
 	error() error
 }

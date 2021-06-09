@@ -10,7 +10,7 @@ import (
 	"github.com/sf9v/kalupi/balance"
 )
 
-// service is an implementation of account service
+// service is an account service implementation
 type service struct {
 	accountRepo account.Repository
 	balService  balance.Service
@@ -18,11 +18,12 @@ type service struct {
 
 var _ account.Service = (*service)(nil)
 
-// New takes an account repository and returns an account service
+// New takes an account and balance repository and returns an account service
 func New(accountRepo account.Repository, balService balance.Service) account.Service {
 	return &service{accountRepo: accountRepo, balService: balService}
 }
 
+// CreateAccount creates a new account
 func (s *service) CreateAccount(ctx context.Context, accnt account.Account) error {
 	err := accnt.Validate()
 	if err != nil {
@@ -35,7 +36,7 @@ func (s *service) CreateAccount(ctx context.Context, accnt account.Account) erro
 	}
 
 	if exists {
-		return account.ErrAccountAlreadyExist
+		return account.ErrAccountAlreadyExists
 	}
 
 	_, err = s.accountRepo.CreateAccount(ctx, accnt)
@@ -46,6 +47,7 @@ func (s *service) CreateAccount(ctx context.Context, accnt account.Account) erro
 	return nil
 }
 
+// GetAccount retrievies an account via account id
 func (s *service) GetAccount(ctx context.Context,
 	accntID account.AccountID) (*account.Account, error) {
 	err := accntID.Validate()

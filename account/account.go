@@ -13,8 +13,9 @@ import (
 // AccountID is the account id
 type AccountID string
 
-func (accID AccountID) Validate() error {
-	return validation.Validate(string(accID),
+// Validate validates the account id
+func (accntID AccountID) Validate() error {
+	return validation.Validate(string(accntID),
 		validation.Required.Error("must not be empty"),
 		validation.Length(6, 64).Error("must have length between 6 and 64"),
 		is.Alphanumeric.Error("must contain english letters and digits only"),
@@ -28,6 +29,7 @@ type Account struct {
 	Balance   decimal.Decimal   `json:"balance"`
 }
 
+// Validate validates the account
 func (ac Account) Validate() error {
 	return validation.Errors{
 		"account_id": ac.AccountID.Validate(),
