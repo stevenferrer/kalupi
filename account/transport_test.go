@@ -12,11 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sf9v/kalupi/account"
-	accountsvc "github.com/sf9v/kalupi/account/service"
-	"github.com/sf9v/kalupi/balance"
-	"github.com/sf9v/kalupi/etc/txdb"
-	"github.com/sf9v/kalupi/postgres"
+	"github.com/stevenferrer/kalupi/account"
+	accountsvc "github.com/stevenferrer/kalupi/account/service"
+	"github.com/stevenferrer/kalupi/balance"
+	"github.com/stevenferrer/kalupi/etc/txdb"
+	"github.com/stevenferrer/kalupi/postgres"
 )
 
 func TestHTTPHandler(t *testing.T) {

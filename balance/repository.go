@@ -3,8 +3,8 @@ package balance
 import (
 	"context"
 
-	"github.com/sf9v/kalupi/account"
-	"github.com/sf9v/kalupi/etc/tx"
+	"github.com/stevenferrer/kalupi/account"
+	"github.com/stevenferrer/kalupi/etc/tx"
 )
 
 // Repository is a balance repository

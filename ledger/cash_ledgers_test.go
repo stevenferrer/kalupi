@@ -3,8 +3,8 @@ package ledger_test
 import (
 	"testing"
 
-	"github.com/sf9v/kalupi/currency"
-	"github.com/sf9v/kalupi/ledger"
+	"github.com/stevenferrer/kalupi/currency"
+	"github.com/stevenferrer/kalupi/ledger"
 	"github.com/stretchr/testify/assert"
 )
 

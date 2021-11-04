@@ -3,8 +3,8 @@ package ledger
 import (
 	"time"
 
-	"github.com/sf9v/kalupi/currency"
 	"github.com/shopspring/decimal"
+	"github.com/stevenferrer/kalupi/currency"
 )
 
 // LedgerNo is a ledger account number

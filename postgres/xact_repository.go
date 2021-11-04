@@ -6,8 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sf9v/kalupi/etc/tx"
-	"github.com/sf9v/kalupi/transaction"
+	"github.com/stevenferrer/kalupi/etc/tx"
+	"github.com/stevenferrer/kalupi/transaction"
 )
 
 // XactRepository implements the account transaction repository

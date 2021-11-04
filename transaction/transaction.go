@@ -7,8 +7,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"github.com/sf9v/kalupi/account"
-	"github.com/sf9v/kalupi/ledger"
+	"github.com/stevenferrer/kalupi/account"
+	"github.com/stevenferrer/kalupi/ledger"
 )
 
 // XactNo is a transaction number

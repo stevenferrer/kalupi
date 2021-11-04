@@ -1,7 +1,7 @@
-[![GoDoc Reference](https://pkg.go.dev/badge/github.com/sf9v/kalupi)](https://pkg.go.dev/github.com/sf9v/kalupi)
-![Github Actions](https://github.com/sf9v/kalupi/workflows/test/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/sf9v/kalupi/badge.svg?branch=main)](https://coveralls.io/github/sf9v/kalupi?branch=main)
-[![Go Report Card](https://goreportcard.com/badge/github.com/sf9v/kalupi)](https://goreportcard.com/report/github.com/sf9v/kalupi)
+[![GoDoc Reference](https://pkg.go.dev/badge/github.com/stevenferrer/kalupi)](https://pkg.go.dev/github.com/stevenferrer/kalupi)
+![Github Actions](https://github.com/stevenferrer/kalupi/workflows/test/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/stevenferrer/kalupi/badge.svg?branch=main)](https://coveralls.io/github/stevenferrer/kalupi?branch=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/stevenferrer/kalupi)](https://goreportcard.com/report/github.com/stevenferrer/kalupi)
 
 # Kalupi
 
@@ -80,7 +80,7 @@ The double-entry accounting implementation in this project is heavily based on t
 
 ## Contributing
 
-All contributions are welcome! Please feel free to [open an issue](https://github.com/sf9v/kalupi/issues/new) or [make a pull request](https://github.com/sf9v/kalupi/pulls).
+All contributions are welcome! Please feel free to [open an issue](https://github.com/stevenferrer/kalupi/issues/new) or [make a pull request](https://github.com/stevenferrer/kalupi/pulls).
 
 ## License
 

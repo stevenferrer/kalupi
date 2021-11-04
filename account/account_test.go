@@ -3,8 +3,8 @@ package account_test
 import (
 	"testing"
 
-	"github.com/sf9v/kalupi/account"
-	"github.com/sf9v/kalupi/currency"
+	"github.com/stevenferrer/kalupi/account"
+	"github.com/stevenferrer/kalupi/currency"
 	"github.com/stretchr/testify/assert"
 )
 

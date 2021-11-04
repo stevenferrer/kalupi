@@ -1,7 +1,7 @@
 package ledger
 
 import (
-	"github.com/sf9v/kalupi/currency"
+	"github.com/stevenferrer/kalupi/currency"
 )
 
 // List of cash ledger account numbers

@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/sf9v/kalupi/currency"
-	"github.com/sf9v/kalupi/etc/txdb"
-	"github.com/sf9v/kalupi/ledger"
-	"github.com/sf9v/kalupi/postgres"
+	"github.com/stevenferrer/kalupi/currency"
+	"github.com/stevenferrer/kalupi/etc/txdb"
+	"github.com/stevenferrer/kalupi/ledger"
+	"github.com/stevenferrer/kalupi/postgres"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

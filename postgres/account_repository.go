@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sf9v/kalupi/account"
+	"github.com/stevenferrer/kalupi/account"
 )
 
 // AccountRepository implements the account repository

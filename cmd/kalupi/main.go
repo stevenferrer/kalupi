@@ -15,12 +15,12 @@ import (
 	"github.com/go-kit/kit/log"
 	_ "github.com/lib/pq"
 
-	"github.com/sf9v/kalupi/account"
-	accountsvc "github.com/sf9v/kalupi/account/service"
-	"github.com/sf9v/kalupi/balance"
-	"github.com/sf9v/kalupi/ledger"
-	"github.com/sf9v/kalupi/postgres"
-	"github.com/sf9v/kalupi/transaction"
+	"github.com/stevenferrer/kalupi/account"
+	accountsvc "github.com/stevenferrer/kalupi/account/service"
+	"github.com/stevenferrer/kalupi/balance"
+	"github.com/stevenferrer/kalupi/ledger"
+	"github.com/stevenferrer/kalupi/postgres"
+	"github.com/stevenferrer/kalupi/transaction"
 )
 
 const (

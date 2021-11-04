@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sf9v/kalupi/etc/txdb"
-	"github.com/sf9v/kalupi/ledger"
-	"github.com/sf9v/kalupi/postgres"
+	"github.com/stevenferrer/kalupi/etc/txdb"
+	"github.com/stevenferrer/kalupi/ledger"
+	"github.com/stevenferrer/kalupi/postgres"
 )
 
 func TestLedgerService(t *testing.T) {

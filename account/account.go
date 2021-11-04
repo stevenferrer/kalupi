@@ -7,7 +7,7 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/shopspring/decimal"
 
-	"github.com/sf9v/kalupi/currency"
+	"github.com/stevenferrer/kalupi/currency"
 )
 
 // AccountID is the account id

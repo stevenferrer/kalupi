@@ -1,4 +1,4 @@
-module github.com/sf9v/kalupi
+module github.com/stevenferrer/kalupi
 
 go 1.16
 

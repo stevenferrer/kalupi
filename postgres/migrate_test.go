@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/sf9v/kalupi/etc/txdb"
-	"github.com/sf9v/kalupi/postgres"
+	"github.com/stevenferrer/kalupi/etc/txdb"
+	"github.com/stevenferrer/kalupi/postgres"
 )
 
 func TestMigrate(t *testing.T) {

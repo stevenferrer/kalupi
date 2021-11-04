@@ -5,9 +5,9 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
-	"github.com/sf9v/kalupi/account"
-	"github.com/sf9v/kalupi/balance"
-	"github.com/sf9v/kalupi/etc/tx"
+	"github.com/stevenferrer/kalupi/account"
+	"github.com/stevenferrer/kalupi/balance"
+	"github.com/stevenferrer/kalupi/etc/tx"
 )
 
 // BalanceRepository implements the balance repository

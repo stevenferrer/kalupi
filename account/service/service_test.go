@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sf9v/kalupi/account"
-	accountservice "github.com/sf9v/kalupi/account/service"
-	"github.com/sf9v/kalupi/balance"
-	"github.com/sf9v/kalupi/currency"
-	"github.com/sf9v/kalupi/etc/txdb"
-	"github.com/sf9v/kalupi/postgres"
+	"github.com/stevenferrer/kalupi/account"
+	accountservice "github.com/stevenferrer/kalupi/account/service"
+	"github.com/stevenferrer/kalupi/balance"
+	"github.com/stevenferrer/kalupi/currency"
+	"github.com/stevenferrer/kalupi/etc/txdb"
+	"github.com/stevenferrer/kalupi/postgres"
 )
 
 func TestAccountService(t *testing.T) {

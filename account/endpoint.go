@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 
-	"github.com/sf9v/kalupi/currency"
+	"github.com/stevenferrer/kalupi/currency"
 )
 
 // createAccountRequest is a create account request

@@ -1,8 +1,8 @@
 package transaction
 
 import (
-	"github.com/sf9v/kalupi/account"
 	"github.com/shopspring/decimal"
+	"github.com/stevenferrer/kalupi/account"
 )
 
 // Payment is maps to transfer related transaction

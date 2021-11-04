@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sf9v/kalupi/ledger"
+	"github.com/stevenferrer/kalupi/ledger"
 )
 
 // LedgerRepository implements the ledger repository

@@ -10,10 +10,10 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/multierr"
 
-	"github.com/sf9v/kalupi/account"
-	"github.com/sf9v/kalupi/balance"
-	"github.com/sf9v/kalupi/etc/tx"
-	"github.com/sf9v/kalupi/ledger"
+	"github.com/stevenferrer/kalupi/account"
+	"github.com/stevenferrer/kalupi/balance"
+	"github.com/stevenferrer/kalupi/etc/tx"
+	"github.com/stevenferrer/kalupi/ledger"
 )
 
 // Service is the transaction service

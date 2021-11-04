@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 
-	"github.com/sf9v/kalupi/account"
-	"github.com/sf9v/kalupi/balance"
+	"github.com/stevenferrer/kalupi/account"
+	"github.com/stevenferrer/kalupi/balance"
 )
 
 // service is an account service implementation
